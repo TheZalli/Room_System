@@ -64,7 +64,7 @@ public:
 
 	const boost::ptr_set<world_object>& get_objects() const;
 
-	const unsigned id;
+	const unsigned id{prev_id++};
 private:
 	static unsigned prev_id;
 
@@ -74,14 +74,14 @@ private:
 			room_tr_map;*/
 
 	// currently contains only the x,y dimensions
-	// 1,1 is the upperleftmost part of the floor
-	// walls are at 0 and dim rows/colums
-	/* 10x4 room
-	  0123456789
-	0 ##########
+	// 0,0 is the upperleftmost part of the floor
+	// walls are at -1 and dim+1 rows/colums
+	/* 8x2 room
+	 -1012345678
+   -1 ##########
+	0 #--------#
 	1 #--------#
-	2 #--------#
-	3 ##########
+	2 ##########
 	*/
 	shape_t shape;
 

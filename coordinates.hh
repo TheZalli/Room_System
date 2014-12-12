@@ -64,6 +64,14 @@ struct dim_t {
 	dim_t(length_t w, length_t l): w{w}, l{l} {}
 	dim_t(const pos_t& pos): w{(length_t)pos.x}, l{(length_t)pos.y} {}
 
+	dim_t operator+(const dim_t& p) const;
+	dim_t operator-(const dim_t& p) const;
+	dim_t operator*(const dim_t& p) const;
+	dim_t operator/(const dim_t& p) const;
+
+	dim_t operator*(int rhs) const;
+	dim_t operator/(int rhs) const;
+
 	length_t max() const { return (w > l) ? w : l; }
 	length_t min() const { return (w < l) ? w : l; }
 };

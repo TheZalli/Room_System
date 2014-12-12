@@ -1,11 +1,14 @@
 #ifndef WORLD_OBJECT_HH
 #define WORLD_OBJECT_HH
 #include "coordinates.hh"
+#include "materials.hh"
 #include <string>
 
 using namespace Coordinates;
+using namespace Room_System::Materials;
 
 namespace Room_System {
+
 /*enum material {
 
 };*/
@@ -34,13 +37,15 @@ public:
 		return id < rhs.id;
 	}
 
-	const unsigned id;
+	const unsigned id{prev_id++};
 private:
 	static unsigned prev_id;
 
 	//area_t area;
 	pos_t pos;
 	dim_t dim;
+
+	//material_t mat;
 };
 
 class door : public world_object

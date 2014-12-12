@@ -44,25 +44,21 @@ void draw_room(WINDOW* win, const Room* room, const pos_t& win_pos, const nc_bor
 {
 	assert(room);
 
-	// the point where the upper-left part of the room is
+	// the point where the upper-left part of the room wall is
 	const pos_t displ{win_pos + pos_t(0,1)};
 
 	// write the name
 	mvwprintw(win, win_pos.y, win_pos.x, room->get_name().c_str());
-	draw_rectangle(win, displ, room->get_dim(), bor);
-
-	//const std::set<Room::room_tr>& transitions = room->get_room_trs();
-	// room transitions
-	for (const Room::room_tr& rtr : room->get_room_trs()) {
-		pos_t draw_to{rtr.area_from.pos1 + displ};
-		mvwaddch(win, draw_to.y, draw_to.x, ACS_CKBOARD);
-	}
+	draw_rectangle(win, displ, room->get_dim() + dim_t(2,2), bor);
 
 	// objects
+	// the floor starting location:
+	const pos_t floor_start{displ + pos_t(1,1)};
+
 	const boost::ptr_set<world_object>& objs = room->get_objects();
 	for (boost::ptr_set<world_object>::const_iterator cit = objs.cbegin(); cit != objs.cend(); cit++) {
-		pos_t draw_to1{cit->get_pos() + displ};
-		pos_t draw_to2{draw_to1 + cit->get_dim() - pos_t{1,1}};
+		pos_t draw_to1{cit->get_pos() + floor_start};
+		pos_t draw_to2{draw_to1 + cit->get_dim()};
 		//pos_t draw_to{0,0};
 		try {
 			const door& d = dynamic_cast<door&>(const_cast<world_object&>(*cit));
@@ -71,7 +67,7 @@ void draw_room(WINDOW* win, const Room* room, const pos_t& win_pos, const nc_bor
 
 			bool is_vertical = d.get_is_vertical();
 			if (is_vertical) {
-				ch_to_draw1 = d.get_is_closed() ? 'I' : ACS_S1;
+				ch_to_draw1 = d.get_is_closed() ? 'I' : '-'; //ACS_S1;
 			} else {
 				ch_to_draw1 = d.get_is_closed() ? '=' : '/';
 			}
@@ -79,7 +75,7 @@ void draw_room(WINDOW* win, const Room* room, const pos_t& win_pos, const nc_bor
 
 			if (d.get_length() == 2) {
 				if (is_vertical) {
-					ch_to_draw2 = d.get_is_closed() ? 'I' : ACS_S9;
+					ch_to_draw2 = d.get_is_closed() ? 'I' : '-';//ACS_S9;
 				} else {
 					ch_to_draw2 = d.get_is_closed() ? '=' : '\\';
 				}
@@ -88,6 +84,17 @@ void draw_room(WINDOW* win, const Room* room, const pos_t& win_pos, const nc_bor
 
 		} catch (std::bad_cast) {
 		}
+	}
+
+	for (const Room::room_tr& rtr : room->get_room_trs()) {
+		pos_t draw_to1{rtr.area_from.pos1 + floor_start};
+		pos_t draw_to2{rtr.area_from.pos2 + floor_start};
+
+		mvwchgat(win, draw_to1.y, draw_to1.x, 1, A_NORMAL , 2, NULL);
+		mvwchgat(win, draw_to2.y, draw_to2.x, 1, A_NORMAL, 2, NULL);
+
+		//mvwaddch(win, draw_to1.y, draw_to1.x, ACS_CKBOARD);
+		//mvwaddch(win, draw_to2.y, draw_to2.x, ACS_CKBOARD);
 	}
 }
 

@@ -5,11 +5,11 @@ using namespace Room_System;
 
 unsigned Room::prev_id = 0;
 
-Room::Room(): id{Room::prev_id++}, shape{1,1}, name{}, transitions{}
+Room::Room(): /*id{Room::prev_id++},*/ shape{1,1}, name{}, transitions{}
 {
 }
 
-Room::Room(dim_t dim, std::string name): id{Room::prev_id++}, shape{dim.w, dim.l}, name{name}, transitions{}
+Room::Room(dim_t dim, std::string name): /*id{Room::prev_id++},*/ shape{dim.w, dim.l}, name{name}, transitions{}
 {
 }
 

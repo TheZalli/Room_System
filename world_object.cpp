@@ -5,13 +5,13 @@ using namespace Room_System;
 
 unsigned world_object::prev_id = 0;
 
-world_object::world_object(): id{world_object::prev_id++}, pos{}, dim{} {}
+world_object::world_object(): /*id{world_object::prev_id++},*/ pos{}, dim{} {}
 
 //world_object::world_object(const world_object& obj): id{world_object::prev_id++}, pos{obj.pos}, dim{obj.dim}
 //{}
 
 world_object::world_object(pos_t pos, dim_t dim):
-	id{world_object::prev_id++}, pos{pos}, dim{dim} {}
+	/*id{world_object::prev_id++},*/ pos{pos}, dim{dim} {}
 
 // ---
 

@@ -12,12 +12,14 @@ SOURCES += main.cpp \
     coordinates.cpp \
     nc_drawing_functions.cpp \
     world_object.cpp \
-    actor.cpp
+    actor.cpp \
+    materials.cpp
 
 HEADERS += \
     room.hh \
     coordinates.hh \
     nc_drawing_functions.hh \
     world_object.hh \
-    actor.hh
+    actor.hh \
+    materials.hh
 

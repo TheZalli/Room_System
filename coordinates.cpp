@@ -34,9 +34,39 @@ pos_t pos_t::operator/(int rhs) const
 
 // ---
 
+dim_t dim_t::operator+(const dim_t& p) const {
+	return dim_t(w + p.w, l + p.l);
+}
+
+dim_t dim_t::operator-(const dim_t& p) const {
+	return dim_t(w - p.w, l - p.l);
+}
+
+dim_t dim_t::operator*(const dim_t& p) const
+{
+	return dim_t(w*p.w, l*p.l);
+}
+
+dim_t dim_t::operator/(const dim_t& p) const
+{
+	return dim_t(w/p.w, l/p.l);
+}
+
+dim_t dim_t::operator*(int rhs) const
+{
+	return dim_t(w*rhs, l*rhs);
+}
+
+dim_t dim_t::operator/(int rhs) const
+{
+	return dim_t(w/rhs, l/rhs);
+}
+
+// ---
+
 dim_t area_t::get_dim() const
 {
-	return (dim_t)(pos2-pos1);
+	return (dim_t)(pos2 - pos1 + pos_t(1,1));
 }
 
 pos_t area_t::get_mid_pos() const
@@ -65,5 +95,5 @@ bool area_t::is_overlap(const area_t area) const
 
 pos_t Coordinates::operator+(const pos_t& pos, const dim_t& dim)
 {
-	return pos_t(dim.w + pos.x, dim.l + pos.y);
+	return pos_t(dim.w + pos.x - 1, dim.l + pos.y -1);
 }
