@@ -3,15 +3,24 @@
 
 using namespace Room_System;
 
-unsigned world_object::prev_id = 0;
+unsigned world_object::prev_id = (unsigned)-1;
+std::set<world_object*> world_object::all_objects{};
 
-world_object::world_object(): /*id{world_object::prev_id++},*/ pos{}, dim{} {}
+world_object::world_object(): pos{}, dim{} {
+	all_objects.insert(this);
+}
 
-//world_object::world_object(const world_object& obj): id{world_object::prev_id++}, pos{obj.pos}, dim{obj.dim}
-//{}
+world_object::world_object(const world_object& obj): pos{obj.pos}, dim{obj.dim} {
+	all_objects.insert(this);
+}
 
-world_object::world_object(pos_t pos, dim_t dim):
-	/*id{world_object::prev_id++},*/ pos{pos}, dim{dim} {}
+world_object::world_object(pos_t pos, dim_t dim): pos{pos}, dim{dim} {
+	all_objects.insert(this);
+}
+
+world_object::~world_object() {
+	all_objects.erase(all_objects.find(this));
+}
 
 // ---
 
@@ -36,6 +45,26 @@ door::door(pos_t pos, dim_t dim, bool is_vertical, door* linked_door, bool is_cl
 
 std::string door::get_name() const {
 	return (is_closed ? "a closed door":"an open door");
+}
+
+const std::vector<std::string> door::get_interaction_options() const
+{
+	return std::vector<std::string>({"close", "open"});
+}
+
+bool door::interact(int close_or_open)
+{
+	switch (close_or_open) {
+	case 0:
+		if (is_closed) return false;
+		close();
+	break;
+	default:
+		if (!is_closed) return false;
+		open();
+	break;
+	}
+	return true;
 }
 
 void door::open() {

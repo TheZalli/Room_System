@@ -3,7 +3,7 @@
 
 using namespace Room_System;
 
-unsigned Room::prev_id = 0;
+unsigned Room::prev_id = (unsigned)-1;
 
 Room::Room(): /*id{Room::prev_id++},*/ shape{1,1}, name{}, transitions{}
 {

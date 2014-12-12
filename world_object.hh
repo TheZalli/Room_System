@@ -3,6 +3,8 @@
 #include "coordinates.hh"
 #include "materials.hh"
 #include <string>
+#include <set>
+#include <vector>
 
 using namespace Coordinates;
 using namespace Room_System::Materials;
@@ -17,15 +19,20 @@ class world_object
 {
 public:
 	world_object();
-	//world_object(const world_object& obj);
+	world_object(const world_object& obj);
 	world_object(pos_t pos, dim_t dim);
-	virtual ~world_object() {}
+	~world_object();
 
 	virtual world_object* create() const = 0;	// virtual constructor for creation
 	virtual world_object* clone() const = 0;	// virtual constructor for copying
 
 	virtual std::string get_name() const = 0;
 	virtual bool is_opaque() const { return true; }
+
+	// returns the possible options for interaction in a std::vector
+	virtual const std::vector<std::string> get_interaction_options() const = 0;
+	// interacts with the target
+	virtual bool interact(int) = 0;
 
 	pos_t get_pos() const { return pos; }
 	dim_t get_dim() const { return dim; }
@@ -37,7 +44,7 @@ public:
 		return id < rhs.id;
 	}
 
-	const unsigned id{prev_id++};
+	const unsigned id{++prev_id};
 private:
 	static unsigned prev_id;
 
@@ -45,8 +52,17 @@ private:
 	pos_t pos;
 	dim_t dim;
 
+	static std::set<world_object*> all_objects;
 	//material_t mat;
 };
+
+
+// Boost's clone_allocator.hpp needs this:
+inline world_object* new_clone(const world_object& obj) {
+		return obj.clone();
+}
+
+// --- DOOR --- //
 
 class door : public world_object
 {
@@ -55,7 +71,6 @@ public:
 	door(const door& to_clone) = default;
 	door(pos_t pos, dim_t dim, bool is_vertical, bool is_closed = true);
 	door(pos_t pos, dim_t dim, bool is_vertical, door* linked_door, bool is_closed = true);
-	~door() {}
 
 	door* create() const {
 		return new door();
@@ -66,6 +81,9 @@ public:
 
 	std::string get_name() const;
 	bool is_opaque() const { return is_closed; }
+
+	const std::vector<std::string> get_interaction_options() const;
+	bool interact(int close_or_open);
 
 	bool get_is_closed() const { return is_closed; }
 	void open();

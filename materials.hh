@@ -29,7 +29,7 @@ public:
 		return id < rhs.id;
 	}
 
-	const unsigned id{prev_id++};
+	const unsigned id{++prev_id};
 private:
 	static unsigned prev_id;
 

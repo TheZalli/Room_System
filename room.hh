@@ -64,7 +64,7 @@ public:
 
 	const boost::ptr_set<world_object>& get_objects() const;
 
-	const unsigned id{prev_id++};
+	const unsigned id{++prev_id};
 private:
 	static unsigned prev_id;
 

@@ -48,7 +48,7 @@ void draw_room(WINDOW* win, const Room* room, const pos_t& win_pos, const nc_bor
 	const pos_t displ{win_pos + pos_t(0,1)};
 
 	// write the name
-	mvwprintw(win, win_pos.y, win_pos.x, room->get_name().c_str());
+	mvwprintw(win, win_pos.y, win_pos.x+1, room->get_name().c_str());
 	draw_rectangle(win, displ, room->get_dim() + dim_t(2,2), bor);
 
 	// objects
@@ -86,6 +86,7 @@ void draw_room(WINDOW* win, const Room* room, const pos_t& win_pos, const nc_bor
 		}
 	}
 
+	// highlights room transitions
 	for (const Room::room_tr& rtr : room->get_room_trs()) {
 		pos_t draw_to1{rtr.area_from.pos1 + floor_start};
 		pos_t draw_to2{rtr.area_from.pos2 + floor_start};
