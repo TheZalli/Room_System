@@ -95,6 +95,8 @@ struct area_t {
 
 	dim_t get_dim() const;
 	inline pos_t get_pos1() const { return pos1; }
+	inline pos_t get_pos2() const { return pos2; }
+
 
 	pos_t get_mid_pos() const;
 

@@ -3,8 +3,10 @@
 #include "coordinates.hh"
 #include "materials.hh"
 #include <string>
-#include <set>
+//#include <set>
 #include <vector>
+#include <memory>
+//#include <boost/ptr_container/ptr_set.hpp>
 
 using namespace Coordinates;
 using namespace Room_System::Materials;
@@ -15,16 +17,21 @@ namespace Room_System {
 
 };*/
 
-class world_object
-{
-public:
-	world_object();
-	world_object(const world_object& obj);
-	world_object(pos_t pos, dim_t dim);
-	~world_object();
+class Room;
 
-	virtual world_object* create() const = 0;	// virtual constructor for creation
-	virtual world_object* clone() const = 0;	// virtual constructor for copying
+class World_object
+{
+private:
+	typedef std::vector<std::unique_ptr<World_object> > all_obj_vector;
+	static all_obj_vector all_objects;
+public:
+	World_object();
+	World_object(const World_object& obj);
+	World_object(pos_t pos, dim_t dim, Room* where = nullptr);
+	~World_object();
+
+	virtual World_object* create() const = 0;	// virtual constructor for creation
+	virtual World_object* clone() const = 0;	// virtual constructor for copying
 
 	virtual std::string get_name() const = 0;
 	virtual bool is_opaque() const { return true; }
@@ -38,11 +45,19 @@ public:
 	dim_t get_dim() const { return dim; }
 	area_t get_area() const { return area_t{pos, dim}; }
 
-	void move(pos_t to) { pos = to; }
+	Room* get_room() const { return room_where; }
 
-	bool operator<(const world_object& rhs) const {
+	void move(pos_t to) { pos = to; }
+	void set_room(Room* room);
+
+	bool operator<(const World_object& rhs) const {
 		return id < rhs.id;
 	}
+
+	static all_obj_vector& get_all_objects() { return all_objects; }
+
+	// returns a nullpointer if an object with this id can't be found
+	static World_object* get_obj_ptr_by_id(unsigned id);
 
 	const unsigned id{++prev_id};
 private:
@@ -51,26 +66,26 @@ private:
 	//area_t area;
 	pos_t pos;
 	dim_t dim;
+	Room* room_where;
 
-	static std::set<world_object*> all_objects;
 	//material_t mat;
 };
 
 
 // Boost's clone_allocator.hpp needs this:
-inline world_object* new_clone(const world_object& obj) {
+inline World_object* new_clone(const World_object& obj) {
 		return obj.clone();
 }
 
 // --- DOOR --- //
 
-class door : public world_object
+class door : public World_object
 {
 public:
 	door();
 	door(const door& to_clone) = default;
-	door(pos_t pos, dim_t dim, bool is_vertical, bool is_closed = true);
-	door(pos_t pos, dim_t dim, bool is_vertical, door* linked_door, bool is_closed = true);
+	door(pos_t pos, dim_t dim, bool is_vertical, bool is_closed = true, Room* where = nullptr);
+	door(pos_t pos, dim_t dim, bool is_vertical, door* linked_door, bool is_closed = true, Room* where = nullptr);
 
 	door* create() const {
 		return new door();

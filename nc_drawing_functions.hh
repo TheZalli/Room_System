@@ -2,6 +2,7 @@
 #define NC_DRAWING_FUNCTIONS_HH
 #include "coordinates.hh"
 #include "room.hh"
+#include "pc.hh"
 #include <ncurses.h>
 #include <assert.h>
 
@@ -34,6 +35,9 @@ struct nc_border_t {
 void draw_rectangle(WINDOW* win, const pos_t& pos, const dim_t& dim, const nc_border_t& bor);
 void draw_rectangle(WINDOW* win, const area_t& area, const nc_border_t& bor);
 
+// a debug room drawing function
 void draw_room(WINDOW* win, const Room* room, const pos_t& win_pos, const nc_border_t& bor);
+
+void view_draw(WINDOW* win, const PC* player, const pos_t& players_pos_in_win);
 
 #endif // NC_DRAWING_FUNCTIONS_HH

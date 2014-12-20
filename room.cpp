@@ -18,6 +18,35 @@ void Room::Init(unsigned first_id)
 	Room::prev_id = first_id;
 }
 
+// ---
+
+void Room::add_object(World_object* obj)
+{
+	objects.insert(World_object::get_obj_ptr_by_id(obj->id));
+	obj->set_room(this);
+}
+
+bool Room::has_object(World_object* const obj)
+{
+	if (!obj) return false; // is a null pointer
+	if (objects.size() == 0) return false;
+	return (objects.find(obj) != objects.end());
+}
+
+void Room::remove_object(World_object* obj)
+{
+	objects.erase(obj);
+}
+
+void World_object::set_room(Room* room) {//, pos_t to) {
+	//if (room_where && room_where->has_object(this)) room_where->remove_object(this);
+	room_where = room;
+	//room_where->add_object(this);
+	//pos = to;
+}
+
+// ---
+
 void Room::add_room_tr(room_tr rtr)
 {
 	transitions.insert(rtr);
@@ -34,38 +63,33 @@ void Room::add_bi_room_tr(Room::room_tr rtr)
 	rtr.leads_to->transitions.insert(rev_rtr);
 }
 
-void Room::add_object(world_object* obj)
-{
-	objects.insert(obj);
-}
-
 // ---
 
-void Room::add_room_tr_wobj(Room::room_tr rtr, world_object* object_associated)
+void Room::add_room_tr_wobj(Room::room_tr rtr, World_object* object_associated)
 {
 	add_room_tr(rtr);
 	add_object(object_associated);
 }
 
-void Room::add_room_tr_wobj(Room* const leads_to, const pos_t pos_to, world_object* object_associated)
+void Room::add_room_tr_wobj(Room* const leads_to, const pos_t pos_to, World_object* object_associated)
 {
 	room_tr rtr{leads_to, pos_to, object_associated->get_area()};
 	add_room_tr_wobj(rtr, object_associated);
 }
 
 
-void Room::add_bi_room_tr_wobj(Room::room_tr rtr, world_object* object_associated)
+void Room::add_bi_room_tr_wobj(Room::room_tr rtr, World_object* object_associated)
 {
 	add_bi_room_tr(rtr);
 	add_object(object_associated);
 
 	// the object in the second room
-	world_object* new_obj = object_associated->clone();
+	World_object* new_obj = object_associated->clone();
 	new_obj->move(rtr.pos_to);
 	rtr.leads_to->add_object(new_obj);
 }
 
-void Room::add_bi_room_tr_wobj(Room* const leads_to, const pos_t pos_to, world_object* object_associated)
+void Room::add_bi_room_tr_wobj(Room* const leads_to, const pos_t pos_to, World_object* object_associated)
 {
 	room_tr rtr{leads_to, pos_to, object_associated->get_area()};
 	add_bi_room_tr_wobj(rtr, object_associated);
@@ -103,7 +127,7 @@ const std::set<Room::room_tr>& Room::get_room_trs() const
 	return transitions;
 }
 
-const boost::ptr_set<world_object>& Room::get_objects() const
+const Room::room_obj_set& Room::get_objects() const
 {
 	return objects;
 }

@@ -1,4 +1,5 @@
 #include "room.hh"
+#include "pc.hh"
 #include "nc_drawing_functions.hh"
 //#include <iostream>
 #include <ncurses.h>
@@ -8,8 +9,7 @@
 using namespace Room_System;
 using namespace Coordinates;
 
-int main()
-{
+void init_ncurses() {
 	initscr();
 	raw();//cbreak();
 	keypad(stdscr, true);
@@ -24,7 +24,11 @@ int main()
 	} else {
 		printw("This terminal doesn't support colors\n");
 	}
+}
 
+int main()
+{
+	init_ncurses();
 	BOR_RECTANGLE
 
 	dim_t scrdim;
@@ -33,6 +37,9 @@ int main()
 
 	Room r1{{8,3}, "the first room"};
 	Room r2{{7,4}, "the second room"};
+
+	PC player{{2,2}, {1,1}, "Albert A Asimov"};
+	r1.add_object(&player);
 
 	door* the_special_door{new door{{-1,1}, {1,2}, true}};
 	door* another_special_door{new door{{6,-1}, {2,1}, false}};
@@ -49,6 +56,8 @@ int main()
 		draw_room(stdscr, &r2, pos_t(11,4), bor_rectangle);
 		draw_room(stdscr, &r1, pos_t(22,5), bor_rectangle);
 		refresh();
+
+		//break; // debug
 
 		ch = getch();
 		if (ch == 3) break; // ctrl+c

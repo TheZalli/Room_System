@@ -5,8 +5,11 @@
 #include "world_object.hh"
 #include <string>
 #include <cstddef>
+#include <memory>
 #include <set>
-#include <boost/ptr_container/ptr_set.hpp>
+//#include <assert.h>
+
+//#include <boost/ptr_container/ptr_set.hpp>
 /*#include <boost/bimap.hpp>
 #include <boost/bimap/multiset_of.hpp>
 #include <boost/bimap/unordered_set_of.hpp>*/
@@ -17,7 +20,22 @@ namespace Room_System {
 class Room
 {
 public:
-	// a struct for doors, cojoined room borders and other room transitions
+	/*struct wp_obj_comp_key {
+		bool operator ()(const std::weak_ptr<World_object>& o1, const std::weak_ptr<World_object>& o2) {
+			return (*o1.lock() < *o2.lock());
+		}
+	};*/
+	//typedef std::set<std::weak_ptr<World_object>, wp_obj_comp_key> room_obj_set;
+	struct p_obj_comp_key {
+			bool operator ()(const World_object* o1, const World_object* o2) {
+				return (*o1 < *o2);
+			}
+		};
+	typedef std::set<World_object*, p_obj_comp_key> room_obj_set;
+
+	//---
+
+	// a struct for doors, windows, cojoined room borders and other room transitions
 	struct room_tr {
 		Room* leads_to;	// the room where the transition leads to
 		pos_t pos_to;	// the position in the room where the transition leads to
@@ -47,22 +65,27 @@ public:
 
 	//scr_dim_t get_scrdim() const	{ return scr_dim_t(shape); }
 
+	void add_object(World_object* obj);
+	bool has_object(World_object* const obj);
+	void remove_object(World_object* obj);
+
+	friend void World_object::set_room(Room* room);//, pos_t to);
+
 	void add_room_tr(room_tr rtr);
 	void add_bi_room_tr(room_tr rtr);
-	void add_object(world_object* obj);
 
-	inline void add_room_tr_wobj(room_tr rtr, world_object* object_associated);
-	void add_room_tr_wobj(Room* const leads_to, const pos_t pos_to, world_object* object_associated);
+	inline void add_room_tr_wobj(room_tr rtr, World_object* object_associated);
+	void add_room_tr_wobj(Room* const leads_to, const pos_t pos_to, World_object* object_associated);
 
-	void add_bi_room_tr_wobj(room_tr rtr, world_object* object_associated);
-	void add_bi_room_tr_wobj(Room* const leads_to, const pos_t pos_to, world_object* object_associated);
+	void add_bi_room_tr_wobj(room_tr rtr, World_object* object_associated);
+	void add_bi_room_tr_wobj(Room* const leads_to, const pos_t pos_to, World_object* object_associated);
 
 	void add_door(Room* const second_room, const pos_t pos_to, door* door_in_first);
 
 	const room_tr& get_room_tr(const pos_t& at) const;
 	const std::set<room_tr>& get_room_trs() const;
 
-	const boost::ptr_set<world_object>& get_objects() const;
+	const room_obj_set& get_objects() const;
 
 	const unsigned id{++prev_id};
 private:
@@ -96,7 +119,8 @@ private:
 
 	// a set for objects in the room
 	//std::set<world_object> objects;
-	boost::ptr_set<world_object> objects;
+	//boost::ptr_set<World_object> objects;
+	room_obj_set objects;
 
 };
 
