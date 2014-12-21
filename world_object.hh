@@ -28,7 +28,7 @@ public:
 	World_object();
 	World_object(const World_object& obj);
 	World_object(pos_t pos, dim_t dim, Room* where = nullptr);
-	~World_object();
+	virtual ~World_object();
 
 	virtual World_object* create() const = 0;	// virtual constructor for creation
 	virtual World_object* clone() const = 0;	// virtual constructor for copying
@@ -107,14 +107,14 @@ public:
 	bool get_is_vertical() const { return is_vertical; }
 	int get_length() const;
 
-	door* get_linked_version(pos_t pos_to);
-	void link(door* door) { linked_door = door; }
+	//door* get_linked_version(pos_t pos_to);
+	//void link(door* door) { linked_door = door; }
 
 private:
 	bool is_vertical;
 	bool is_closed;
 	int length;
-	door* linked_door;
+	//door* linked_door;
 };
 
 }

@@ -29,7 +29,7 @@ void init_ncurses() {
 int main()
 {
 	init_ncurses();
-	BOR_RECTANGLE
+	//BOR_RECTANGLE
 
 	dim_t scrdim;
 	getmaxyx(stdscr, scrdim.l, scrdim.w);
@@ -38,8 +38,8 @@ int main()
 	Room r1{{8,3}, "the first room"};
 	Room r2{{7,4}, "the second room"};
 
-	PC player{{2,2}, {1,1}, "Albert A Asimov"};
-	r1.add_object(&player);
+	PC* player_ptr{new PC{{2,2}, {1,1}, "Albert A Asimov"}};
+	r1.add_object(player_ptr);
 
 	door* the_special_door{new door{{-1,1}, {1,2}, true}};
 	door* another_special_door{new door{{6,-1}, {2,1}, false}};
@@ -50,11 +50,15 @@ int main()
 
 	//draw_rectangle(stdscr, pos_t(5,5), r.get_dim(), bor_rectangle);
 
-	while(true) {
+	while(true) { // main loop
 		clear();
 		//mvprintw(scrdim.l/2, (scrdim.w - 6)/2, "%3d:%c", ch, ch);
-		draw_room(stdscr, &r2, pos_t(11,4), bor_rectangle);
-		draw_room(stdscr, &r1, pos_t(22,5), bor_rectangle);
+		//draw_room(stdscr, &r2, pos_t(11,4), bor_rectangle);
+		//draw_room(stdscr, &r1, pos_t(22,5), bor_rectangle);
+
+		// testing:
+		view_draw(stdscr, player_ptr, pos_t(22,5) + player_ptr->get_pos());
+
 		refresh();
 
 		//break; // debug

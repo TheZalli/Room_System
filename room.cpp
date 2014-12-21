@@ -65,20 +65,22 @@ void Room::add_bi_room_tr(Room::room_tr rtr)
 
 // ---
 
-void Room::add_room_tr_wobj(Room::room_tr rtr, World_object* object_associated)
+/*void Room::add_room_tr_wobj(Room::room_tr rtr, World_object* object_associated)
 {
+	add_room_tr(rtr);
+	add_object(object_associated);
+}*/
+
+void Room::add_room_tr_wobj(Room* const leads_to, const pos_t pos_to, World_object* object_associated)
+{
+	room_tr rtr{leads_to, pos_to, object_associated->get_area(), object_associated};
+	//add_room_tr_wobj(rtr, object_associated);
 	add_room_tr(rtr);
 	add_object(object_associated);
 }
 
-void Room::add_room_tr_wobj(Room* const leads_to, const pos_t pos_to, World_object* object_associated)
-{
-	room_tr rtr{leads_to, pos_to, object_associated->get_area()};
-	add_room_tr_wobj(rtr, object_associated);
-}
 
-
-void Room::add_bi_room_tr_wobj(Room::room_tr rtr, World_object* object_associated)
+/*void Room::add_bi_room_tr_wobj(Room::room_tr rtr, World_object* object_associated)
 {
 	add_bi_room_tr(rtr);
 	add_object(object_associated);
@@ -87,24 +89,25 @@ void Room::add_bi_room_tr_wobj(Room::room_tr rtr, World_object* object_associate
 	World_object* new_obj = object_associated->clone();
 	new_obj->move(rtr.pos_to);
 	rtr.leads_to->add_object(new_obj);
-}
+}*/
 
-void Room::add_bi_room_tr_wobj(Room* const leads_to, const pos_t pos_to, World_object* object_associated)
+/*void Room::add_bi_room_tr_wobj(Room* const leads_to, const pos_t pos_to, World_object* object_associated)
 {
 	room_tr rtr{leads_to, pos_to, object_associated->get_area()};
 	add_bi_room_tr_wobj(rtr, object_associated);
-}
+
+}*/
 
 void Room::add_door(Room* const second_room, const pos_t pos_to, door* door_in_first)
 {
 	room_tr rtr{second_room, pos_to, door_in_first->get_area()};
 	add_bi_room_tr(rtr);
 
-	door* second_door = door_in_first->get_linked_version(pos_to);
-	door_in_first->link(second_door);
+	//door* second_door = door_in_first->get_linked_version(pos_to);
+	//door_in_first->link(second_door);
 
 	objects.insert(door_in_first);
-	second_room->objects.insert(second_door);
+	//second_room->objects.insert(second_door);
 }
 // ---
 
@@ -139,8 +142,8 @@ const Room::room_obj_set& Room::get_objects() const
 	return r.id;
 }*/
 
-Room::room_tr::room_tr(Room* const leads_to, const pos_t& pos_to, const area_t& area_from):
-	leads_to{leads_to}, pos_to{pos_to}, area_from{area_from} {}
+Room::room_tr::room_tr(Room* const leads_to, const pos_t& pos_to, const area_t& area_from, World_object* obj_associated):
+	leads_to{leads_to}, pos_to{pos_to}, area_from{area_from}, obj_associated{obj_associated} {}
 
 /*Room::room_tr::room_tr(const Room* leads_to, const pos_t& pos_to, const area_t& area_from, world_object * const object_associated):
 	leads_to{leads_to}, pos_to{pos_to}, area_from{area_from},

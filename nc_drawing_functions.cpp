@@ -1,5 +1,8 @@
 #include "nc_drawing_functions.hh"
+#include <cmath>
+#include <vector>
 //#include <set>
+//#include <stdlib.h>
 //#include <boost/ptr_container/ptr_set.hpp>
 
 void draw_rectangle(WINDOW* win, const pos_t& pos, const dim_t& dim, const nc_border_t& bor) {
@@ -57,6 +60,7 @@ void draw_room(WINDOW* win, const Room* room, const pos_t& win_pos, const nc_bor
 
 	const Room::room_obj_set& objs = room->get_objects();
 	if (objs.size() == 0) return;
+
 	for (Room::room_obj_set::const_iterator cit = objs.cbegin(); cit != objs.cend(); cit++) {
 		World_object* const obj_ptr = *cit;
 
@@ -107,11 +111,13 @@ void draw_room(WINDOW* win, const Room* room, const pos_t& win_pos, const nc_bor
 		//mvwaddch(win, draw_to1.y, draw_to1.x, ACS_CKBOARD);
 		//mvwaddch(win, draw_to2.y, draw_to2.x, ACS_CKBOARD);
 	}
-
-	mvwaddch(win, floor_start.y, floor_start.x, 'x');
 }
 
-
+char debug_uint_to_hex_char(unsigned i) {
+	if (i < 10)	return (char)((int)'0' + i);
+	else if (i < 26-1-10)	return (char)((int)'A' + i - 10);
+	else return '-';
+}
 
 void view_draw(WINDOW* win, const PC* player, const pos_t& players_pos_in_win)
 {
@@ -119,11 +125,13 @@ void view_draw(WINDOW* win, const PC* player, const pos_t& players_pos_in_win)
 	struct view_ray {
 		pos_t travel_pos;
 	};
+
 	if (!player) return; // there is no player
 	mvwaddch(win, players_pos_in_win.y, players_pos_in_win.x, '@');
 
-	Room* players_room = player->get_room();
+	const Room* const players_room = player->get_room();
 	if (!players_room) return; // the player resides in the void of nullness
+
 
 	const Room::room_obj_set& objects = players_room->get_objects();
 
@@ -136,33 +144,39 @@ void view_draw(WINDOW* win, const PC* player, const pos_t& players_pos_in_win)
 	}
 
 	// the room transitions
-	const std::set<Room::room_tr>& room_transitions{players_room->get_room_trs()};
-	//std::set<Room::room_tr> visible_room_trs{};
+	//const std::set<Room::room_tr>& room_transitions{players_room->get_room_trs()};
 
-	// what room_transitions the player can see
-	/*for (const Room::room_tr& rtr : room_transitions) {
-		for (length_t x_in_rtr = 0; x_in_rtr < rtr.area_from.get_dim().w; ++x_in_rtr) {
-			for (length_t y_in_rtr = 0; y_in_rtr < rtr.area_from.get_dim().l; ++y_in_rtr) {
+	/*/ testing:
 
-				const pos_t dir{rtr.area_from.pos1 + pos_t(x_in_rtr,y_in_rtr) - player->get_pos()};
+	const pos_t& p{player->get_pos()};
+	pos_t draw_pos;
+	for (dist_t x = 1; x <= 10; ++x) {
+		for (dist_t y = 0; y <= 10; ++y) {
+			draw_pos = players_pos_in_win + pos_t{x,y};
 
-				const pos_t dir_per_abs_dir;
-				if (dir.x < 0) dir_per_abs_dir.x = -1;
-				else if (dir.x == 0) dir_per_abs_dir.x = 0;
-				else dir_per_abs_dir.x = 1;
+			unsigned value = std::sqrt(x*x + y*y);
 
-				if (dir.y < 0) dir_per_abs_dir.y = -1;
-				else if (dir.y == 0) dir_per_abs_dir.y = 0;
-				else dir_per_abs_dir.y = 1;
-
-
-				pos_t vis_ray{player->get_pos()};
-
-				while (!rtr.area_from.is_in_area(vis_ray)) {
-
-				}
-			}
+			wmove(win, draw_pos.y, draw_pos.x);
+			if (value%2) attron(A_REVERSE);
+			else attroff(A_REVERSE);
+			waddch(win, debug_uint_to_hex_char(value));
+			//mvwchgat(win, draw_pos.y, draw_pos.x, 1, A_NORMAL, 2, NULL);
 		}
 	}*/
+
+	// calculates the rooms we need to draw
+	// OPTIMIZATION: set the number of maximum room transitions and then use a circular stack of that size as next_to_inspect
+	Room* const inspected_room{const_cast<Room* const>(players_room)};
+	std::vector<Room*> now_inspecting;
+	std::vector<Room*> next_to_inspect;
+
+	std::vector<Room*> rooms_to_draw;
+
+	for (const Room::room_tr& rtr : inspected_room->get_room_trs()) {
+		if (rtr.obj_associated && !rtr.obj_associated->is_opaque()) { // if the object breaks the line of sight
+			rooms_to_draw.push_back((rtr.leads_to));
+			next_to_inspect.push_back((rtr.leads_to)); //const_cast<Room* const>
+		}
+	}
 
 }

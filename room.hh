@@ -40,10 +40,11 @@ public:
 		Room* leads_to;	// the room where the transition leads to
 		pos_t pos_to;	// the position in the room where the transition leads to
 		area_t area_from;	// transition area
+		World_object* obj_associated;
 		// the object this is associated with. if this is null pointer then there is no object
 		//world_object const* obj_associated;
 
-		room_tr(Room* const leads_to, const pos_t& pos_to, const area_t& area_from);
+		room_tr(Room* const leads_to, const pos_t& pos_to, const area_t& area_from, World_object* obj_associated = nullptr);
 		//room_tr(const Room* leads_to, const pos_t& pos_to, const area_t& area_from, world_object* const object_associated);
 		// automatically adds the object
 		//room_tr(Room* const leads_to, const pos_t& pos_to, const area_t& area_from, world_object* object_associated);
@@ -74,11 +75,11 @@ public:
 	void add_room_tr(room_tr rtr);
 	void add_bi_room_tr(room_tr rtr);
 
-	inline void add_room_tr_wobj(room_tr rtr, World_object* object_associated);
+	//inline void add_room_tr_wobj(room_tr rtr, World_object* object_associated);
 	void add_room_tr_wobj(Room* const leads_to, const pos_t pos_to, World_object* object_associated);
 
-	void add_bi_room_tr_wobj(room_tr rtr, World_object* object_associated);
-	void add_bi_room_tr_wobj(Room* const leads_to, const pos_t pos_to, World_object* object_associated);
+	//void add_bi_room_tr_wobj(room_tr rtr, World_object* object_associated);
+	//void add_bi_room_tr_wobj(Room* const leads_to, const pos_t pos_to, World_object* object_associated);
 
 	void add_door(Room* const second_room, const pos_t pos_to, door* door_in_first);
 
