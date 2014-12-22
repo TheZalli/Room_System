@@ -28,25 +28,26 @@ void init_ncurses() {
 
 int main()
 {
+	Room* r1 = new Room{{9,4}, "the first room"};
+	Room* r2 = new Room{{7,4}, "the second room"};
+	Room* r3 = new Room{{3,9}, "the magic room"};
+
+	PC* player_ptr{new PC{{2,2}, {1,1}, "Albert A Asimov"}};
+	r1->add_object(player_ptr);
+
+	door* door1{new door{{-1,1}, {1,2}, true}};
+	door* door2{new door{{5,-1}, {1,2}, false}};
+	door* door3 = new door(pos_t(2,-1), dim_t(1,1), false);
+	r1->add_door(r2, pos_t(8,2), door1);
+	r1->add_door(r3, pos_t(2,10), door2);
+	r3->add_door(r2, pos_t(3,5), door3);
+
 	init_ncurses();
 	//BOR_RECTANGLE
 
 	dim_t scrdim;
 	getmaxyx(stdscr, scrdim.l, scrdim.w);
 	int ch{0};
-
-	Room r1{{8,3}, "the first room"};
-	Room r2{{7,4}, "the second room"};
-
-	PC* player_ptr{new PC{{2,2}, {1,1}, "Albert A Asimov"}};
-	r1.add_object(player_ptr);
-
-	door* the_special_door{new door{{-1,1}, {1,2}, true}};
-	door* another_special_door{new door{{6,-1}, {2,1}, false}};
-	//r1.add_bi_room_tr_wobj(Room::room_tr{&r2, {7,2}, pos_t{0,2}}, the_special_door);
-	//r1.add_bi_room_tr_wobj(&r2, pos_t(7,2), the_special_door);
-	r1.add_door(&r2, pos_t(8,2), the_special_door);
-	r1.add_object(another_special_door);
 
 	//draw_rectangle(stdscr, pos_t(5,5), r.get_dim(), bor_rectangle);
 
@@ -57,7 +58,7 @@ int main()
 		//draw_room(stdscr, &r1, pos_t(22,5), bor_rectangle);
 
 		// testing:
-		view_draw(stdscr, player_ptr, pos_t(22,5) + player_ptr->get_pos());
+		view_draw(stdscr, player_ptr, pos_t(22,22));
 
 		refresh();
 
@@ -66,16 +67,24 @@ int main()
 		ch = getch();
 		if (ch == 3) break; // ctrl+c
 		else if (ch == 'o') {
-			the_special_door->open();
-			another_special_door->open();
+			door1->open();
+			door2->open();
 		}
 		else if (ch == 'c') {
-			the_special_door->close();
-			another_special_door->close();
+			door1->close();
+			door2->close();
 		}
 		else if (ch == -1) { // update window size
 			getmaxyx(stdscr, scrdim.l, scrdim.w);
 			ch = 0;
+		} else if (ch == KEY_LEFT) {
+			player_ptr->move({-1,0});
+		} else if (ch == KEY_RIGHT) {
+			player_ptr->move({1,0});
+		} else if (ch == KEY_UP) {
+			player_ptr->move({0,-1});
+		} else if (ch == KEY_DOWN) {
+			player_ptr->move({0,1});
 		}
 
 	}

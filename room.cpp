@@ -1,21 +1,41 @@
 #include "room.hh"
 #include <utility>
+#include <assert.h>
 
 using namespace Room_System;
 
 unsigned Room::prev_id = (unsigned)-1;
 
-Room::Room(): /*id{Room::prev_id++},*/ shape{1,1}, name{}, transitions{}
+Room::Room(): /*id{Room::prev_id++},*/ dim{1,1}, name{}, transitions{}
 {
 }
 
-Room::Room(dim_t dim, std::string name): /*id{Room::prev_id++},*/ shape{dim.w, dim.l}, name{name}, transitions{}
+Room::Room(dim_t dim, std::string name): /*id{Room::prev_id++},*/ dim{dim.w, dim.l}, name{name}, transitions{}
 {
 }
 
 void Room::Init(unsigned first_id)
 {
+	assert(0); // currently there is no need to use this function
 	Room::prev_id = first_id;
+}
+
+bool Room::is_outside_floor(pos_t pos) const{
+	//const pos_t& pos_corner = dim.to_pos();
+	//return (pos.x < 0 || pos.y < 0 || pos.x > pos_corner.x || pos.y > pos_corner.y); // should work
+	return (unsigned)pos.x > dim.w || (unsigned)pos.y > dim.l; // haxy but simple (negative values are larger than positive when interpreted as unsigned)
+}
+
+pos_t Room::how_much_outside(pos_t pos) const {
+	pos_t to_return{0,0};
+	const pos_t& pos_corner = dim.to_pos();
+
+	if (pos.x < 0) to_return.x = pos.x;
+	else to_return.x = pos.x - pos_corner.x;
+	if (pos.y < 0) to_return.y = pos.y;
+	else to_return.y = pos.y - pos_corner.x;
+
+	return to_return;
 }
 
 // ---
@@ -38,30 +58,27 @@ void Room::remove_object(World_object* obj)
 	objects.erase(obj);
 }
 
-void World_object::set_room(Room* room) {//, pos_t to) {
-	//if (room_where && room_where->has_object(this)) room_where->remove_object(this);
-	room_where = room;
-	//room_where->add_object(this);
-	//pos = to;
-}
-
 // ---
 
 void Room::add_room_tr(room_tr rtr)
 {
 	transitions.insert(rtr);
+	if (rtr.get_other_way_room_tr()) {
+		rtr.room_to->transitions.insert(*rtr.get_other_way_room_tr());
+	}
 }
 
-void Room::add_bi_room_tr(Room::room_tr rtr)
+/*void Room::add_bi_room_tr(Room::room_tr rtr)
 {
 	transitions.insert(rtr);
 
 	// the area for the transition on the other room
-	area_t rev_rtr_area{rtr.pos_to, rtr.area_from.get_dim()};
-	room_tr rev_rtr = room_tr(this, rtr.area_from.pos1, rev_rtr_area);
+	//area_t rev_rtr_area{rtr.pos_to, rtr.area_from.get_dim()};
+	//room_tr rev_rtr = room_tr(this, rtr.area_from.pos1, rev_rtr_area);
+	room_tr rev_rtr = *rtr.other_way_room_tr;
 
 	rtr.leads_to->transitions.insert(rev_rtr);
-}
+}*/
 
 // ---
 
@@ -71,9 +88,12 @@ void Room::add_bi_room_tr(Room::room_tr rtr)
 	add_object(object_associated);
 }*/
 
-void Room::add_room_tr_wobj(Room* const leads_to, const pos_t pos_to, World_object* object_associated)
+void Room::add_room_tr_wobj(Room* const leads_to, const pos_t pos_to, World_object* object_associated, bool two_way)
 {
-	room_tr rtr{leads_to, pos_to, object_associated->get_area(), object_associated};
+
+	room_tr rtr{this, leads_to, pos_to, object_associated->get_area(), object_associated};
+	if (two_way) rtr.generate_reverse_tr();
+
 	//add_room_tr_wobj(rtr, object_associated);
 	add_room_tr(rtr);
 	add_object(object_associated);
@@ -100,8 +120,13 @@ void Room::add_room_tr_wobj(Room* const leads_to, const pos_t pos_to, World_obje
 
 void Room::add_door(Room* const second_room, const pos_t pos_to, door* door_in_first)
 {
-	room_tr rtr{second_room, pos_to, door_in_first->get_area()};
-	add_bi_room_tr(rtr);
+	door_in_first->set_room(this);
+	room_tr rtr{this, second_room, pos_to, door_in_first->get_area(), door_in_first};
+	//rtr.set_room_in(this);
+	rtr.generate_reverse_tr();
+	//add_bi_room_tr(rtr);
+	add_room_tr(rtr);
+
 
 	//door* second_door = door_in_first->get_linked_version(pos_to);
 	//door_in_first->link(second_door);
@@ -122,7 +147,7 @@ const Room::room_tr& Room::get_room_tr(const pos_t& at) const
 	return none_room_tr;
 }
 
-const std::set<Room::room_tr>& Room::get_room_trs() const
+const Room::room_tr_set& Room::get_room_trs() const
 {
 	/*std::set<const Room::room_tr&> set;
 	std::copy(room_trs.left.begin(), room_trs.left.end(), set.begin());
@@ -135,6 +160,33 @@ const Room::room_obj_set& Room::get_objects() const
 	return objects;
 }
 
+
+void World_object::move_to_room(Room* room_ptr, pos_t pos)
+{
+	if (room_where) room_where->remove_object(this);
+
+	if (room_ptr) room_ptr->add_object(this);
+	else room_where = room_ptr;
+
+	this->pos = pos;
+}
+
+
+std::pair<Room*, pos_t> World_object::check_room_transitions_on(pos_t pos) const
+{
+	const Room::room_tr& rtr = this->room_where->get_room_tr(pos);
+	if (!rtr.room_to) return std::pair<Room*, pos_t>(nullptr, rtr.pos_to);
+
+	const pos_t destination = rtr.pos_to + pos - rtr.area_from.pos1;
+	return std::pair<Room*, pos_t>(rtr.room_to, destination);
+}
+
+bool World_object::is_allowed_pos(pos_t p) const
+{
+	if (room_where->get_room_tr(p).room_to != nullptr) return true; // p is in a room_tr
+	else return !room_where->is_outside_floor(p);
+}
+
 /*std::size_t hash_value(const Room& r)
 {
 	//boost::hash<unsigned> hasher;
@@ -142,8 +194,24 @@ const Room::room_obj_set& Room::get_objects() const
 	return r.id;
 }*/
 
-Room::room_tr::room_tr(Room* const leads_to, const pos_t& pos_to, const area_t& area_from, World_object* obj_associated):
-	leads_to{leads_to}, pos_to{pos_to}, area_from{area_from}, obj_associated{obj_associated} {}
+Room::room_tr::room_tr(Room* const room_to, const pos_t& pos_to, const area_t& area_from,
+					   World_object* obj_associated,
+					   room_tr* other_way_room_tr):
+	/*room_in{nullptr},*/ room_to{room_to},
+	pos_to{pos_to}, area_from{area_from},
+	obj_associated{obj_associated},
+	other_way_room_tr{other_way_room_tr} {}
+
+
+
+void Room::room_tr::generate_reverse_tr()
+{
+	area_t rev_rtr_area{pos_to, area_from.get_dim()};
+	other_way_room_tr =  new room_tr(room_to, room_in,
+									 area_from.pos1, rev_rtr_area,
+									 obj_associated, this);
+	//other_way_room_tr->set_room_in(room_to);
+}
 
 /*Room::room_tr::room_tr(const Room* leads_to, const pos_t& pos_to, const area_t& area_from, world_object * const object_associated):
 	leads_to{leads_to}, pos_to{pos_to}, area_from{area_from},

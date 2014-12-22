@@ -37,6 +37,26 @@ World_object::~World_object() {
 	//all_objects.erase(all_objects.find(this));
 }
 
+void World_object::set_room(Room* room) {//, pos_t to) {
+	//if (room_where && room_where->has_object(this)) room_where->remove_object(this);
+	room_where = room;
+	//room_where->add_object(this);
+	//pos = to;
+}
+
+void World_object::move(pos_t to_add) {
+	pos_t destination = pos + to_add;
+	if (room_where) {
+		const std::pair<Room*, pos_t>& ptr_n_pos = check_room_transitions_on(destination);
+		if (ptr_n_pos.first) move_to_room(ptr_n_pos.first, ptr_n_pos.second);
+		else {
+			if (is_allowed_pos(destination)) pos += to_add;
+		}
+	} else {
+		pos += to_add;
+	}
+}
+
 World_object* World_object::get_obj_ptr_by_id(unsigned id) {
 	if (id > prev_id) return nullptr; // invalid id
 
@@ -62,15 +82,15 @@ door::door(pos_t pos, dim_t dim, bool is_vertical, bool is_closed, Room* where):
 	length = dim.max();
 }
 
-door::door(pos_t pos, dim_t dim, bool is_vertical, door* linked_door, bool is_closed, Room* where):
-	World_object{pos, dim, where}, is_vertical{is_vertical}, is_closed{is_closed} //, linked_door{linked_door}
+/*door::door(pos_t pos, dim_t dim, bool is_vertical, door* linked_door, bool is_closed, Room* where):
+	World_object{pos, dim, where}, is_vertical{is_vertical}, is_closed{is_closed}, linked_door{linked_door}
 {
 	assert(dim.min() == 1);
 	length = dim.max();
-	/*if (linked_door) {
+	if (linked_door) {
 		linked_door->linked_door = this;
-	}*/
-}
+	}
+}*/
 
 std::string door::get_name() const {
 	return (is_closed ? "a closed door":"an open door");

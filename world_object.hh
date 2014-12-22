@@ -46,9 +46,13 @@ public:
 	area_t get_area() const { return area_t{pos, dim}; }
 
 	Room* get_room() const { return room_where; }
-
-	void move(pos_t to) { pos = to; }
 	void set_room(Room* room);
+
+
+	void set_pos(pos_t to) { pos = to; }
+	// moves the object given travel but checks before if it is possible
+	void move(pos_t to_add);
+
 
 	bool operator<(const World_object& rhs) const {
 		return id < rhs.id;
@@ -58,6 +62,12 @@ public:
 
 	// returns a nullpointer if an object with this id can't be found
 	static World_object* get_obj_ptr_by_id(unsigned id);
+
+
+	// these three are defined in room.cpp as they are Room's friends
+	void move_to_room(Room* room_ptr, pos_t pos);
+	std::pair<Room*, pos_t> check_room_transitions_on(pos_t pos) const;
+	bool is_allowed_pos(pos_t p) const; // checks if the p is on an allowed position, like not inside the walls or other objects
 
 	const unsigned id{++prev_id};
 private:
@@ -85,7 +95,7 @@ public:
 	door();
 	door(const door& to_clone) = default;
 	door(pos_t pos, dim_t dim, bool is_vertical, bool is_closed = true, Room* where = nullptr);
-	door(pos_t pos, dim_t dim, bool is_vertical, door* linked_door, bool is_closed = true, Room* where = nullptr);
+	//door(pos_t pos, dim_t dim, bool is_vertical, door* linked_door, bool is_closed = true, Room* where = nullptr);
 
 	door* create() const {
 		return new door();

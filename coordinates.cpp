@@ -12,6 +12,20 @@ pos_t pos_t::operator-(const pos_t& p) const {
 	return pos_t(x - p.x, y - p.y);
 }
 
+pos_t pos_t::operator-() const{
+	return pos_t(-x, -y);
+}
+
+void pos_t::operator+=(const pos_t& p) {
+	this->x += p.x;
+	this->y += p.y;
+}
+
+void pos_t::operator-=(const pos_t& p) {
+	this->x -= p.x;
+	this->y -= p.y;
+}
+
 pos_t pos_t::operator*(const pos_t& p) const
 {
 	return pos_t(x*p.x, y*p.y);
@@ -40,6 +54,11 @@ dim_t dim_t::operator+(const dim_t& p) const {
 
 dim_t dim_t::operator-(const dim_t& p) const {
 	return dim_t(w - p.w, l - p.l);
+}
+
+dim_t dim_t::operator-() const
+{
+	return dim_t(-w, -l);
 }
 
 dim_t dim_t::operator*(const dim_t& p) const
@@ -91,6 +110,10 @@ bool area_t::is_overlap(const area_t area) const
 {
 	return	(pos1.x <= area.pos2.x) && (pos2.x >= area.pos2.x) &&
 			(pos1.y <= area.pos2.y) && (pos2.y >= area.pos2.y);
+}
+
+bool area_t::operator<(const area_t& rhs) const {
+	return this->get_dim().get_surf_area() < rhs.get_dim().get_surf_area();
 }
 
 pos_t Coordinates::operator+(const pos_t& pos, const dim_t& dim)

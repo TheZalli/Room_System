@@ -36,6 +36,11 @@ struct pos_t {
 
 	pos_t operator+(const pos_t& p) const;
 	pos_t operator-(const pos_t& p) const;
+	pos_t operator-() const;
+
+	void operator+=(const pos_t& p);
+	void operator-=(const pos_t& p);
+
 	pos_t operator*(const pos_t& p) const;
 	pos_t operator/(const pos_t& p) const;
 
@@ -44,6 +49,13 @@ struct pos_t {
 
 	length_t max() const { return (x > y) ? x : y; }
 	length_t min() const { return (x < y) ? x : y; }
+
+	struct pos_key {
+		bool operator()(const pos_t& p1, const pos_t& p2) const {
+			return (p1.x < p2.x && p1.y < p2.y) ||
+				   (p1.x > p2.x && p1.y > p2.y) ; // true if it is on the right and down or left and up from &this
+		}
+	};
 
 	/*friend std::size_t hash_value(const pos_t& pos) {
 		std::size_t seed{0};
@@ -64,8 +76,14 @@ struct dim_t {
 	dim_t(length_t w, length_t l): w{w}, l{l} {}
 	dim_t(const pos_t& pos): w{(length_t)pos.x}, l{(length_t)pos.y} {}
 
+	pos_t to_pos() const { return pos_t((dist_t)w, (dist_t)l); }
+
+	unsigned get_surf_area() const { return w*l; }
+
 	dim_t operator+(const dim_t& p) const;
 	dim_t operator-(const dim_t& p) const;
+	dim_t operator-() const;
+
 	dim_t operator*(const dim_t& p) const;
 	dim_t operator/(const dim_t& p) const;
 
@@ -77,6 +95,9 @@ struct dim_t {
 };
 
 pos_t operator+(const pos_t& pos, const dim_t& dim);
+// ---
+
+
 // ---
 
 typedef dim_t shape_t; // shape, currently the same as dimensions
@@ -97,13 +118,15 @@ struct area_t {
 	inline pos_t get_pos1() const { return pos1; }
 	inline pos_t get_pos2() const { return pos2; }
 
-
 	pos_t get_mid_pos() const;
 
 	void move_area_to(pos_t new_pos);
 
 	bool is_in_area(const pos_t& p) const;
 	bool is_overlap(const area_t area) const;
+
+	// measures the areas of the two areas
+	bool operator<(const area_t& rhs) const;
 
 	/*friend std::size_t hash_value(const area_t& pos) {
 		std::size_t seed{0};

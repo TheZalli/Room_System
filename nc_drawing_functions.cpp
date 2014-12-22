@@ -1,6 +1,7 @@
 #include "nc_drawing_functions.hh"
 #include <cmath>
 #include <vector>
+#include <sstream>
 //#include <set>
 //#include <stdlib.h>
 //#include <boost/ptr_container/ptr_set.hpp>
@@ -22,7 +23,8 @@ void draw_rectangle(WINDOW* win, const pos_t& pos, const dim_t& dim, const nc_bo
 	mvwvline(win, y + 1, x + w,	bor.rs, h - 1);
 }
 
-void draw_rectangle(WINDOW* win, const area_t& area, const nc_border_t& bor)
+// broken:
+/*void draw_rectangle(WINDOW* win, const area_t& area, const nc_border_t& bor)
 {
 	const int& x1{area.pos1.x};
 	const int& y1{area.pos1.y};
@@ -41,17 +43,20 @@ void draw_rectangle(WINDOW* win, const area_t& area, const nc_border_t& bor)
 	mvwvline(win, y1 + 1, x1,	bor.ls, h - 1);
 	mvwvline(win, y1 + 1, x2,	bor.rs, h - 1);
 
-}
+}*/
 
 void draw_room(WINDOW* win, const Room* room, const pos_t& win_pos, const nc_border_t& bor)
 {
 	assert(room);
+	assert(win);
 
 	// the point where the upper-left part of the room wall is
 	const pos_t displ{win_pos + pos_t(0,1)};
 
 	// write the name
 	mvwprintw(win, win_pos.y, win_pos.x+1, room->get_name().c_str());
+
+	// draw the borders
 	draw_rectangle(win, displ, room->get_dim() + dim_t(2,2), bor);
 
 	// objects
@@ -121,10 +126,7 @@ char debug_uint_to_hex_char(unsigned i) {
 
 void view_draw(WINDOW* win, const PC* player, const pos_t& players_pos_in_win)
 {
-	// a struct that represents the backtraced paths of fotons, for the ray-casting algorithm
-	struct view_ray {
-		pos_t travel_pos;
-	};
+	//assert(win);
 
 	if (!player) return; // there is no player
 	mvwaddch(win, players_pos_in_win.y, players_pos_in_win.x, '@');
@@ -136,12 +138,12 @@ void view_draw(WINDOW* win, const PC* player, const pos_t& players_pos_in_win)
 	const Room::room_obj_set& objects = players_room->get_objects();
 
 	// the opaque areas of the room
-	std::vector<area_t> opaque_areas{}; // OPTIMIZATION: this could be cached and updated only when the room is changed
+	/*std::vector<area_t> opaque_areas{}; // OPTIMIZATION: this could be cached and updated only when the room is changed
 
 	for (World_object* const obj_ptr : players_room->get_objects()) {
 		if (obj_ptr->is_opaque() && (typeid(*obj_ptr) != typeid(PC)))
 			opaque_areas.push_back(obj_ptr->get_area());
-	}
+	}*/
 
 	// the room transitions
 	//const std::set<Room::room_tr>& room_transitions{players_room->get_room_trs()};
@@ -165,18 +167,87 @@ void view_draw(WINDOW* win, const PC* player, const pos_t& players_pos_in_win)
 	}*/
 
 	// calculates the rooms we need to draw
-	// OPTIMIZATION: set the number of maximum room transitions and then use a circular stack of that size as next_to_inspect
-	Room* const inspected_room{const_cast<Room* const>(players_room)};
-	std::vector<Room*> now_inspecting;
-	std::vector<Room*> next_to_inspect;
+	// OPTIMIZATION: set the number of maximum room transitions and then use a circular stack of that size^2 (?) as next_to_inspect
+	typedef std::pair<const Room* const, const pos_t> room_draw_pair;
+	typedef std::vector<room_draw_pair> room_draw_vector;
+	room_draw_vector now_inspecting;
+	room_draw_vector next_to_inspect;
+	next_to_inspect.push_back({players_room, pos_t(0,0)});
 
-	std::vector<Room*> rooms_to_draw;
+	std::set<const Room::room_tr*> visited_trs;
 
-	for (const Room::room_tr& rtr : inspected_room->get_room_trs()) {
-		if (rtr.obj_associated && !rtr.obj_associated->is_opaque()) { // if the object breaks the line of sight
-			rooms_to_draw.push_back((rtr.leads_to));
-			next_to_inspect.push_back((rtr.leads_to)); //const_cast<Room* const>
+	room_draw_vector rooms_to_draw;
+
+	//pos_t temp_pos_from_players_room;
+	//pos_t temp_pos_from_parent_room;
+
+	std::stringstream debug_messages;
+	unsigned counter{0};
+
+	// breadth first search of the available rooms and their position to the player's room
+	do {
+		now_inspecting.swap(next_to_inspect);
+		next_to_inspect.clear();
+		for (room_draw_pair inspected_room : now_inspecting) {
+			const Room::room_tr_set room_trs = inspected_room.first->get_room_trs();
+			const pos_t& temp_pos_from_players_room{inspected_room.second};
+
+			debug_messages << "draw: " << inspected_room.first->get_name() << ' ' << inspected_room.second.x << ", " << inspected_room.second.y << std::endl;
+
+			for (const Room::room_tr& rtr : room_trs) {
+				if (visited_trs.find(&rtr) == visited_trs.end() &&
+					(rtr.get_other_way_room_tr() != nullptr &&
+					 visited_trs.find(rtr.get_other_way_room_tr()) == visited_trs.end()) ) {
+
+					visited_trs.insert(&rtr);
+					//visited_trs.insert(rtr.get_other_way_room_tr());
+					//if (rtr.obj_associated && !rtr.obj_associated->is_opaque()) { // if the object breaks the line of sight
+					rooms_to_draw.push_back({rtr.room_to, temp_pos_from_players_room + rtr.area_from.pos1 - rtr.pos_to});
+					next_to_inspect.push_back({rtr.room_to, temp_pos_from_players_room + rtr.area_from.pos1 - rtr.pos_to}); //const_cast<Room* const>
+
+					debug_messages << "tr:   " << rtr.room_in->get_name() << "->" << rtr.room_to->get_name() << std::endl;
+					//}
+				}
+			}
 		}
+		if (counter++ >= 5) {
+			debug_messages << "break" << std::endl;
+			break;
+		}
+	} while (next_to_inspect.size() != 0);
+
+	BOR_RECTANGLE;
+
+
+	// draw the rooms
+	for (room_draw_pair draw_room : rooms_to_draw) {
+		//if (draw_room.first->id == 1) break; // debug
+		pos_t draw_pos{players_pos_in_win - player->get_pos() + draw_room.second};
+		debug_messages << "pos of room \"" << draw_room.first->get_name() << "\": " << draw_room.second.x << ", " << draw_room.second.y << std::endl;
+		draw_rectangle(win, draw_pos - pos_t(1,1), draw_room.first->get_dim() + pos_t(2,2), bor_rectangle);
+
+		mvwprintw(win, draw_pos.y-2, draw_pos.x+1, draw_room.first->get_name().c_str());
 	}
 
+	// drawing the player's room
+	pos_t draw_pos{players_pos_in_win - player->get_pos() - pos_t(1,1 +1)}; // the last +1 is a quick fix
+	draw_rectangle(win, draw_pos + pos_t(0,1), players_room->get_dim() + pos_t(2,2), bor_rectangle);
+	mvwprintw(win, draw_pos.y, draw_pos.x+1, players_room->get_name().c_str());
+
+
+	// highlight room transitions
+	for (const Room::room_tr& rtr : players_room->get_room_trs()) {
+		const pos_t draw_to1{rtr.area_from.pos1 + players_pos_in_win - player->get_pos()};
+		const pos_t draw_to2{rtr.area_from.pos2 + players_pos_in_win - player->get_pos()};
+
+		debug_messages << "tr(h): " << rtr.room_in->get_name() << "->" << rtr.room_to->get_name() << std::endl;
+
+		mvwchgat(win, draw_to1.y, draw_to1.x, 1, A_NORMAL, 2, NULL);
+		mvwchgat(win, draw_to2.y, draw_to2.x, 1, A_NORMAL, 2, NULL);
+
+		//mvwaddch(win, draw_to1.y, draw_to1.x, ACS_CKBOARD);
+		//mvwaddch(win, draw_to2.y, draw_to2.x, ACS_CKBOARD);
+	}
+
+	mvwprintw(win, 30, 0, debug_messages.str().c_str());
 }
