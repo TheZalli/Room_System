@@ -62,9 +62,10 @@ void Room::remove_object(World_object* obj)
 
 void Room::add_room_tr(room_tr rtr)
 {
-	transitions.insert(rtr);
+	transitions.push_back(rtr);
 	if (rtr.get_other_way_room_tr()) {
-		rtr.room_to->transitions.insert(*rtr.get_other_way_room_tr());
+		//rtr.room_to->transitions.insert(*rtr.get_other_way_room_tr());
+		rtr.room_to->transitions.push_back(*rtr.get_other_way_room_tr());
 	}
 }
 
@@ -134,6 +135,16 @@ void Room::add_door(Room* const second_room, const pos_t pos_to, door* door_in_f
 	objects.insert(door_in_first);
 	//second_room->objects.insert(second_door);
 }
+
+void Room::make_door(bool is_vertical, Room* const room1, Room* room2, const pos_t& pos1, const pos_t& pos2, const dim_t& dim, bool is_closed)
+{
+	door* dr_ptr = new door(pos1, dim, is_vertical, is_closed, room1);
+	room_tr rtr(room1, room2, pos2, area_t(pos1, dim), dr_ptr);
+	rtr.generate_reverse_tr();
+	room1->add_room_tr(rtr);
+
+	room1->objects.insert(dr_ptr);
+}
 // ---
 
 const Room::room_tr& Room::get_room_tr(const pos_t& at) const
@@ -141,13 +152,13 @@ const Room::room_tr& Room::get_room_tr(const pos_t& at) const
 	/*auto find_it = room_trs.right.find(area_t(at));
 	if (find_it == room_trs.right.end()) return nullptr;
 	else return find_it->second;*/
-	for (std::set<room_tr>::const_iterator it = transitions.cbegin(); it != transitions.cend(); ++it) {
+	for (room_tr_vector::const_iterator it = transitions.cbegin(); it != transitions.cend(); ++it) {
 		if (it->area_from.is_in_area(at)) return *it;
 	}
 	return none_room_tr;
 }
 
-const Room::room_tr_set& Room::get_room_trs() const
+const Room::room_tr_vector& Room::get_room_trs() const
 {
 	/*std::set<const Room::room_tr&> set;
 	std::copy(room_trs.left.begin(), room_trs.left.end(), set.begin());

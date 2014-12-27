@@ -77,15 +77,15 @@ public:
 			other_way_room_tr = &generate_reverse_tr;
 		}*/
 
-		struct room_tr_key {
+		/*struct room_tr_key {
 			bool operator ()(const room_tr& rtr1, const room_tr& rtr2) const {
 				return pos_t::pos_key{}(rtr1.pos_to, rtr2.pos_to);
 			}
-		};
+		};*/
 	}const none_room_tr{nullptr, nullptr, {}, {}};
 
-	typedef std::set<room_tr, room_tr::room_tr_key> room_tr_set;
-
+	//typedef std::set<room_tr, room_tr::room_tr_key> room_tr_set;
+	typedef std::vector<room_tr> room_tr_vector;
 	// ---
 
 	Room();
@@ -119,9 +119,13 @@ public:
 	//void add_bi_room_tr_wobj(Room* const leads_to, const pos_t pos_to, World_object* object_associated);
 
 	void add_door(Room* const second_room, const pos_t pos_to, door* door_in_first);
+	static void make_door	(bool is_vertical,
+							 Room* const room1,	Room* const room2,
+							 const pos_t& pos1,	const pos_t& pos2,
+							 const dim_t& dim, bool is_closed = true);
 
 	const room_tr& get_room_tr(const pos_t& at) const;
-	const room_tr_set& get_room_trs() const;
+	const room_tr_vector& get_room_trs() const;
 
 	const room_obj_set& get_objects() const;
 
@@ -159,7 +163,7 @@ private:
 	room_tr_map room_trs;*/
 
 	// a set for room transitions, eg doorways, windows, cojoined room borders
-	room_tr_set transitions;
+	room_tr_vector transitions;
 
 	// a set for objects in the room
 	//std::set<world_object> objects;

@@ -35,12 +35,16 @@ int main()
 	PC* player_ptr{new PC{{2,2}, {1,1}, "Albert A Asimov"}};
 	r1->add_object(player_ptr);
 
-	door* door1{new door{{-1,1}, {1,2}, true}};
+	/*door* door1{new door{{-1,1}, {1,2}, true}};
 	door* door2{new door{{5,-1}, {1,2}, false}};
 	door* door3 = new door(pos_t(2,-1), dim_t(1,1), false);
 	r1->add_door(r2, pos_t(8,2), door1);
 	r1->add_door(r3, pos_t(2,10), door2);
-	r3->add_door(r2, pos_t(3,5), door3);
+	r3->add_door(r2, pos_t(3,5), door3);*/
+
+	Room::make_door(true,  r1, r2, {-1,1}, {8,2}, {1,2});
+	Room::make_door(false, r1, r3, {5,-1}, {1,10}, {2,1});
+	Room::make_door(false, r2, r3, {2,5}, {2,-1}, {1,1});
 
 	init_ncurses();
 	//BOR_RECTANGLE
@@ -66,14 +70,14 @@ int main()
 
 		ch = getch();
 		if (ch == 3) break; // ctrl+c
-		else if (ch == 'o') {
+		/*else if (ch == 'o') {
 			door1->open();
 			door2->open();
 		}
 		else if (ch == 'c') {
 			door1->close();
 			door2->close();
-		}
+		}*/
 		else if (ch == -1) { // update window size
 			getmaxyx(stdscr, scrdim.l, scrdim.w);
 			ch = 0;

@@ -189,7 +189,7 @@ void view_draw(WINDOW* win, const PC* player, const pos_t& players_pos_in_win)
 		now_inspecting.swap(next_to_inspect);
 		next_to_inspect.clear();
 		for (room_draw_pair inspected_room : now_inspecting) {
-			const Room::room_tr_set room_trs = inspected_room.first->get_room_trs();
+			const Room::room_tr_vector room_trs = inspected_room.first->get_room_trs();
 			const pos_t& temp_pos_from_players_room{inspected_room.second};
 
 			debug_messages << "draw: " << inspected_room.first->get_name() << ' ' << inspected_room.second.x << ", " << inspected_room.second.y << std::endl;
@@ -216,27 +216,28 @@ void view_draw(WINDOW* win, const PC* player, const pos_t& players_pos_in_win)
 		}
 	} while (next_to_inspect.size() != 0);
 
-	BOR_RECTANGLE;
-
+	//BOR_RECTANGLE;
+	//BOR_ASCII
 
 	// draw the rooms
 	for (room_draw_pair draw_room : rooms_to_draw) {
 		//if (draw_room.first->id == 1) break; // debug
-		pos_t draw_pos{players_pos_in_win - player->get_pos() + draw_room.second};
-		debug_messages << "pos of room \"" << draw_room.first->get_name() << "\": " << draw_room.second.x << ", " << draw_room.second.y << std::endl;
-		draw_rectangle(win, draw_pos - pos_t(1,1), draw_room.first->get_dim() + pos_t(2,2), bor_rectangle);
-
-		mvwprintw(win, draw_pos.y-2, draw_pos.x+1, draw_room.first->get_name().c_str());
+		pos_t draw_pos{players_pos_in_win - player->get_pos() + draw_room.second  - pos_t(1,1)};
+		//debug_messages << "pos of room \"" << draw_room.first->get_name() << "\": " << draw_room.second.x << ", " << draw_room.second.y << std::endl;
+		//draw_rectangle(win, draw_pos - pos_t(1,1), draw_room.first->get_dim() + pos_t(2,2), bor_ascii);
+		vd_draw_room(win, draw_room.first, draw_pos, true);
+		//mvwprintw(win, draw_pos.y-2, draw_pos.x+1, draw_room.first->get_name().c_str()); // name
 	}
 
 	// drawing the player's room
-	pos_t draw_pos{players_pos_in_win - player->get_pos() - pos_t(1,1 +1)}; // the last +1 is a quick fix
-	draw_rectangle(win, draw_pos + pos_t(0,1), players_room->get_dim() + pos_t(2,2), bor_rectangle);
-	mvwprintw(win, draw_pos.y, draw_pos.x+1, players_room->get_name().c_str());
+	pos_t draw_pos{players_pos_in_win - player->get_pos() - pos_t(1,1)};
+	//draw_rectangle(win, draw_pos + pos_t(0,1), players_room->get_dim() + pos_t(2,2), bor_ascii);
+	vd_draw_room(win, players_room, draw_pos, false);
+	//mvwprintw(win, draw_pos.y, draw_pos.x+1, players_room->get_name().c_str()); // name
 
 
 	// highlight room transitions
-	for (const Room::room_tr& rtr : players_room->get_room_trs()) {
+	/*for (const Room::room_tr& rtr : players_room->get_room_trs()) {
 		const pos_t draw_to1{rtr.area_from.pos1 + players_pos_in_win - player->get_pos()};
 		const pos_t draw_to2{rtr.area_from.pos2 + players_pos_in_win - player->get_pos()};
 
@@ -247,7 +248,75 @@ void view_draw(WINDOW* win, const PC* player, const pos_t& players_pos_in_win)
 
 		//mvwaddch(win, draw_to1.y, draw_to1.x, ACS_CKBOARD);
 		//mvwaddch(win, draw_to2.y, draw_to2.x, ACS_CKBOARD);
-	}
+	}*/
 
 	mvwprintw(win, 30, 0, debug_messages.str().c_str());
+}
+
+
+void vd_draw_room(WINDOW* win, const Room* const room, const pos_t& pos_in_win, bool draw_only_outlines)
+{
+	const pos_t start_pos = pos_in_win - pos_t(0,0);
+	const pos_t end_pos = start_pos + room->get_dim().to_pos() + pos_t(2,2);
+
+	mvwhline(win, start_pos.y, start_pos.x, '-', room->get_dim().w + 3);
+	mvwhline(win, end_pos.y,
+			 start_pos.x,
+			 '-', room->get_dim().w + 3);
+
+	mvwvline(win, start_pos.y + 1, start_pos.x, '|', room->get_dim().l + 1);
+	mvwvline(win, start_pos.y + 1,
+			 end_pos.x,
+			 '|', room->get_dim().l + 1);
+
+	if (draw_only_outlines) return;
+
+	const Room::room_obj_set objs = room->get_objects();
+
+	for (const Room::room_tr& rtr : room->get_room_trs()) {
+		vd_draw_obj(win, rtr.obj_associated, pos_in_win + rtr.area_from.get_pos1() + pos_t(1,1));
+	}
+
+	for (Room::room_obj_set::const_iterator cit = objs.cbegin(); cit != objs.cend(); cit++) {
+		vd_draw_obj(win, *cit, pos_in_win + (*cit)->get_pos() + pos_t(1,1));
+	}
+
+}
+
+
+void vd_draw_obj(WINDOW* win, const World_object* const obj_ptr, const pos_t& draw_pos)
+{
+	const pos_t draw_pos2 = draw_pos + obj_ptr->get_dim();
+	//pos_t draw_pos{0,0};
+	try {
+		if (typeid(*obj_ptr) == typeid(door)) {
+			const door& d = dynamic_cast<door&>(const_cast<World_object&>(*obj_ptr));
+			chtype ch_to_draw1;
+			chtype ch_to_draw2;
+
+			bool is_vertical = d.get_is_vertical();
+			if (is_vertical) {
+				ch_to_draw1 = d.get_is_closed() ? 'I' : '-'; //ACS_S1;
+			} else {
+				ch_to_draw1 = d.get_is_closed() ? '=' : '/';
+			}
+			mvwaddch(win, draw_pos.y, draw_pos.x, ch_to_draw1);
+
+			if (d.get_length() == 2) {
+				if (is_vertical) {
+					ch_to_draw2 = d.get_is_closed() ? 'I' : '-';//ACS_S9;
+				} else {
+					ch_to_draw2 = d.get_is_closed() ? '=' : '\\';
+				}
+				mvwaddch(win, draw_pos2.y, draw_pos2.x, ch_to_draw2);
+			}
+		} /*else if (typeid(*obj_ptr) == typeid(PC)) {
+			const PC& pc = dynamic_cast<PC&>(const_cast<World_object&>(*obj_ptr));
+
+			mvwaddch(win, draw_pos.y, draw_pos.x, '@');
+
+		}*/
+	} catch (std::bad_typeid) {
+		assert(0);
+	}
 }

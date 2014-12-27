@@ -14,11 +14,14 @@ struct nc_border_t {
 	chtype	tl, tr, bl, br; // corners
 };
 
-// put tjis after the ncurses has done it's initializations
+// put this after the ncurses has done it's initializations
 #define MY_NCDF_HELPER_BORDERS \
 	const nc_border_t bor_empty\
 	{' ',' ',' ',' ',\
 	 ' ',' ',' ',' '};\
+	const nc_border_t bor_ascii\
+	{'|','|','-','-',\
+	 '+','+','+','+'};\
 	const nc_border_t bor_rectangle\
 	{ACS_VLINE,ACS_VLINE, ACS_HLINE,ACS_HLINE,\
 	 ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER};\
@@ -30,6 +33,10 @@ struct nc_border_t {
 	const nc_border_t bor_rectangle\
 	{ACS_VLINE,ACS_VLINE, ACS_HLINE,ACS_HLINE,\
 	 ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER};
+#define BOR_ASCII \
+	const nc_border_t bor_ascii\
+	{'|','|','-','-',\
+	 '+','+','+','+'};\
 //---
 
 void draw_rectangle(WINDOW* win, const pos_t& pos, const dim_t& dim, const nc_border_t& bor);
@@ -38,6 +45,8 @@ void draw_rectangle(WINDOW* win, const area_t& area, const nc_border_t& bor);
 // a debug room drawing function
 void draw_room(WINDOW* win, const Room* room, const pos_t& win_pos, const nc_border_t& bor);
 
+void vd_draw_obj(WINDOW* win, const World_object* const obj_ptr, const pos_t& draw_pos);
+void vd_draw_room(WINDOW* win, const Room* const room, const pos_t& pos_in_win, bool draw_only_outlines);
 void view_draw(WINDOW* win, const PC* player, const pos_t& players_pos_in_win);
 
 #endif // NC_DRAWING_FUNCTIONS_HH
