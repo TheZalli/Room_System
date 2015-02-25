@@ -14,7 +14,8 @@ SOURCES += main.cpp \
     world_object.cpp \
     materials.cpp \
     character.cpp \
-    pc.cpp
+    pc.cpp \
+    event_handler.cpp
 
 HEADERS += \
     room.hh \
@@ -23,5 +24,7 @@ HEADERS += \
     world_object.hh \
     materials.hh \
     character.hh \
-    pc.hh
+    pc.hh \
+    ../event_handler.h \
+    event_handler.hh
 

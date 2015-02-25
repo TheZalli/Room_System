@@ -6,17 +6,17 @@ using namespace Coordinates;
 using namespace Room_System;
 
 // the player character
-class PC : public Character
+class Player : public Character
 {
 public:
 	//PC();
-	PC(pos_t pos, dim_t dim, std::string name, Room* room = nullptr);
+	Player(pos_t pos, dim_t dim, std::string name, Room* room = nullptr);
 
-	PC* create() const {
+	Player* create() const {
 		assert(0); // PC should be unique
 		//return new PC();
 	}
-	PC* clone() const {
+	Player* clone() const {
 		assert(0); // PC should be unique
 		//return new PC(*this);
 	}
@@ -30,5 +30,5 @@ public:
 
 private:
 };
-
+//extern Player* PLAYER_PTR = nullptr;
 #endif // PC_HH

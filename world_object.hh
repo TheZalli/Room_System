@@ -1,7 +1,7 @@
 #ifndef WORLD_OBJECT_HH
 #define WORLD_OBJECT_HH
 #include "coordinates.hh"
-#include "materials.hh"
+//#include "materials.hh"
 #include <string>
 //#include <set>
 #include <vector>
@@ -9,13 +9,14 @@
 //#include <boost/ptr_container/ptr_set.hpp>
 
 using namespace Coordinates;
-using namespace Room_System::Materials;
+//using namespace Room_System::Materials;
 
 namespace Room_System {
 
 /*enum material {
 
 };*/
+
 
 class Room;
 
@@ -51,7 +52,8 @@ public:
 
 	void set_pos(pos_t to) { pos = to; }
 	// moves the object given travel but checks before if it is possible
-	void move(pos_t to_add);
+	// returns true if the move was succesful
+	//bool move(pos_t to_add);
 
 
 	bool operator<(const World_object& rhs) const {
@@ -65,7 +67,7 @@ public:
 
 
 	// these three are defined in room.cpp as they are Room's friends
-	void move_to_room(Room* room_ptr, pos_t pos);
+	//void move_to_room(Room* room_ptr, pos_t pos);
 	std::pair<Room*, pos_t> check_room_transitions_on(pos_t pos) const;
 	bool is_allowed_pos(pos_t p) const; // checks if the p is on an allowed position, like not inside the walls or other objects
 

@@ -46,6 +46,16 @@ pos_t pos_t::operator/(int rhs) const
 	return pos_t(x/rhs, y/rhs);
 }
 
+bool pos_t::operator==(const pos_t& rhs) const
+{
+	return (x == rhs.x) && (y == rhs.y);
+}
+
+bool pos_t::operator!=(const pos_t& rhs) const
+{
+	return (x != rhs.x) || (y != rhs.y);
+}
+
 // ---
 
 dim_t dim_t::operator+(const dim_t& p) const {
@@ -79,6 +89,11 @@ dim_t dim_t::operator*(int rhs) const
 dim_t dim_t::operator/(int rhs) const
 {
 	return dim_t(w/rhs, l/rhs);
+}
+
+bool dim_t::operator==(const dim_t& rhs) const
+{
+	return (w == rhs.w) && (l == rhs.l);
 }
 
 // ---

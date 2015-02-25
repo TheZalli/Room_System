@@ -17,6 +17,13 @@
 using namespace Coordinates;
 namespace Room_System {
 
+enum room_type {
+	small_room,	// a room where you can see everywhere
+	large_room,	// a hall where you can't see from one end to another
+	corridor,	// a narrow room (l or w is 1-3)
+	outside_area // an outside area without borders
+};
+
 class Room
 {
 public:
@@ -56,6 +63,12 @@ public:
 		/*bool operator<(const room_tr& rhs) const {
 			return leads_to->id < rhs.leads_to->id;
 		}*/
+		inline bool operator==(const room_tr& rhs) const {
+			return area_from.pos1 == rhs.area_from.pos1;
+		}
+		inline bool operator!=(const room_tr& rhs) const {
+			return area_from.pos1 != rhs.area_from.pos1;
+		}
 
 		void set_room_in(Room* room_in){
 			this->room_in = room_in;
@@ -82,14 +95,19 @@ public:
 				return pos_t::pos_key{}(rtr1.pos_to, rtr2.pos_to);
 			}
 		};*/
-	}const none_room_tr{nullptr, nullptr, {}, {}};
+		std::string to_string() const { // DEBUG
+			return room_in->get_name() + ": " + area_from.to_string() + " -> "
+				 + room_to->get_name() + ": " + pos_to.to_string();
+		}
+	};
+	static const room_tr none_room_tr;
 
 	//typedef std::set<room_tr, room_tr::room_tr_key> room_tr_set;
 	typedef std::vector<room_tr> room_tr_vector;
 	// ---
 
 	Room();
-	Room(dim_t dim, std::string name);
+	Room(dim_t dim, std::string name, room_type type = small_room);
 
 	// initializes the unique id counter, currently unnecessary
 	static void Init(unsigned first_id = (unsigned)-1);
@@ -130,7 +148,7 @@ public:
 	const room_obj_set& get_objects() const;
 
 	//friend void World_object::set_room(Room* room);//, pos_t to);
-	friend void World_object::move_to_room(Room* room_ptr, pos_t pos);
+	//friend void World_object::move_to_room(Room* room_ptr, pos_t pos);
 	friend std::pair<Room*, pos_t> World_object::check_room_transitions_on(pos_t pos) const;
 	friend bool World_object::is_allowed_pos(pos_t p) const;
 
@@ -169,6 +187,8 @@ private:
 	//std::set<world_object> objects;
 	//boost::ptr_set<World_object> objects;
 	room_obj_set objects;
+
+	room_type type;
 
 };
 

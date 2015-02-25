@@ -6,13 +6,13 @@ using namespace Room_System;
 
 unsigned Room::prev_id = (unsigned)-1;
 
-Room::Room(): /*id{Room::prev_id++},*/ dim{1,1}, name{}, transitions{}
-{
-}
+const Room::room_tr Room::none_room_tr = Room::room_tr{nullptr, {}, {}, nullptr, nullptr};
 
-Room::Room(dim_t dim, std::string name): /*id{Room::prev_id++},*/ dim{dim.w, dim.l}, name{name}, transitions{}
-{
-}
+Room::Room(): /*id{Room::prev_id++},*/ dim{1,1}, name{}, transitions{}, type{small_room}
+{}
+
+Room::Room(dim_t dim, std::string name, room_type type):
+	/*id{Room::prev_id++},*/ dim{dim.w, dim.l}, name{name}, transitions{}, type{type} {}
 
 void Room::Init(unsigned first_id)
 {
@@ -21,9 +21,9 @@ void Room::Init(unsigned first_id)
 }
 
 bool Room::is_outside_floor(pos_t pos) const{
-	//const pos_t& pos_corner = dim.to_pos();
-	//return (pos.x < 0 || pos.y < 0 || pos.x > pos_corner.x || pos.y > pos_corner.y); // should work
-	return (unsigned)pos.x > dim.w || (unsigned)pos.y > dim.l; // haxy but simple (negative values are larger than positive when interpreted as unsigned)
+	const pos_t& pos_corner = dim.to_pos();
+	return (pos.x < 0 || pos.y < 0 || pos.x >= pos_corner.x || pos.y >= pos_corner.y); // should work
+	//return (unsigned)pos.x >= dim.w || (unsigned)pos.y >= dim.l; // haxy but simple (negative values are larger than positive when interpreted as unsigned)
 }
 
 pos_t Room::how_much_outside(pos_t pos) const {
@@ -155,7 +155,7 @@ const Room::room_tr& Room::get_room_tr(const pos_t& at) const
 	for (room_tr_vector::const_iterator it = transitions.cbegin(); it != transitions.cend(); ++it) {
 		if (it->area_from.is_in_area(at)) return *it;
 	}
-	return none_room_tr;
+	return Room::none_room_tr;
 }
 
 const Room::room_tr_vector& Room::get_room_trs() const
@@ -172,15 +172,17 @@ const Room::room_obj_set& Room::get_objects() const
 }
 
 
-void World_object::move_to_room(Room* room_ptr, pos_t pos)
+/*void World_object::move_to_room(Room* room_ptr, pos_t pos)
 {
 	if (room_where) room_where->remove_object(this);
 
 	if (room_ptr) room_ptr->add_object(this);
 	else room_where = room_ptr;
 
+	Event_handler::add_event_to_cur(e_tr_room(this,this->pos, pos, room_ptr));
+
 	this->pos = pos;
-}
+}*/
 
 
 std::pair<Room*, pos_t> World_object::check_room_transitions_on(pos_t pos) const

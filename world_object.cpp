@@ -44,18 +44,32 @@ void World_object::set_room(Room* room) {//, pos_t to) {
 	//pos = to;
 }
 
-void World_object::move(pos_t to_add) {
+/*bool World_object::move(pos_t to_add) {
 	pos_t destination = pos + to_add;
 	if (room_where) {
-		const std::pair<Room*, pos_t>& ptr_n_pos = check_room_transitions_on(destination);
-		if (ptr_n_pos.first) move_to_room(ptr_n_pos.first, ptr_n_pos.second);
-		else {
-			if (is_allowed_pos(destination)) pos += to_add;
+		if (is_allowed_pos(destination)) {
+			Event_handler::get_current_event_handler()->
+					add_event(e_move(this, pos, destination));
+			pos = destination;
+			return true;
+		} else {
+			const std::pair<Room*, pos_t>& ptr_n_pos = check_room_transitions_on(pos);
+			if (ptr_n_pos.first) {
+				move_to_room(ptr_n_pos.first, ptr_n_pos.second); // TODO
+				Event_handler::get_current_event_handler()->
+						add_event(e_move(this, pos, pos + to_add));
+				pos += to_add;
+				return true;
+			}
 		}
 	} else {
+		Event_handler::get_current_event_handler()->
+				add_event(e_move(this, pos, pos + to_add));
 		pos += to_add;
+		return true;
 	}
-}
+	return false;
+}*/
 
 World_object* World_object::get_obj_ptr_by_id(unsigned id) {
 	if (id > prev_id) return nullptr; // invalid id

@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <limits>
 #include <type_traits>
+#include <string>
 //#include <boost/functional/hash.hpp>
 
 namespace Coordinates {
@@ -47,8 +48,11 @@ struct pos_t {
 	pos_t operator*(int rhs) const;
 	pos_t operator/(int rhs) const;
 
-	length_t max() const { return (x > y) ? x : y; }
-	length_t min() const { return (x < y) ? x : y; }
+	bool operator==(const pos_t& rhs) const;
+	bool operator!=(const pos_t& rhs) const;
+
+	dist_t max() const { return (x > y) ? x : y; }
+	dist_t min() const { return (x < y) ? x : y; }
 
 	struct pos_key {
 		bool operator()(const pos_t& p1, const pos_t& p2) const {
@@ -56,6 +60,10 @@ struct pos_t {
 				   (p1.x > p2.x && p1.y > p2.y) ; // true if it is on the right and down or left and up from &this
 		}
 	};
+
+	std::string to_string() const {
+		return std::to_string(x) + ", " + std::to_string(y);
+	}
 
 	/*friend std::size_t hash_value(const pos_t& pos) {
 		std::size_t seed{0};
@@ -90,8 +98,15 @@ struct dim_t {
 	dim_t operator*(int rhs) const;
 	dim_t operator/(int rhs) const;
 
+	bool operator==(const dim_t& rhs) const;
+
 	length_t max() const { return (w > l) ? w : l; }
 	length_t min() const { return (w < l) ? w : l; }
+
+
+	std::string to_string() const {
+		return std::to_string(w) + "x" + std::to_string(l);
+	}
 };
 
 pos_t operator+(const pos_t& pos, const dim_t& dim);
@@ -101,6 +116,13 @@ pos_t operator+(const pos_t& pos, const dim_t& dim);
 // ---
 
 typedef dim_t shape_t; // shape, currently the same as dimensions
+
+// ---
+
+/*struct size_t_pos {
+    size_t x;
+    size_t y;
+};*/
 
 // ---
 
@@ -127,6 +149,10 @@ struct area_t {
 
 	// measures the areas of the two areas
 	bool operator<(const area_t& rhs) const;
+
+	std::string to_string() const {
+		return '(' + pos1.to_string() + "), (" + pos2.to_string() + ')';
+	}
 
 	/*friend std::size_t hash_value(const area_t& pos) {
 		std::size_t seed{0};
