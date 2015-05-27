@@ -1,9 +1,7 @@
 #ifndef NC_DRAWING_FUNCTIONS_HH
 #define NC_DRAWING_FUNCTIONS_HH
-#include "event_handler.hh"
 //#include "coordinates.hh"
-//#include "room.hh"
-#include "pc.hh"
+#include "room.hh"
 #include <ncurses.h>
 #include <string>
 #include <assert.h>
@@ -85,11 +83,18 @@ public:
 		char* array;
 	};
 
-	Ascii_drawer(Event_handler* const eh_ptr, WINDOW* const win,
-				 Player* const PC_ptr, pos_t offset = pos_t()):
+	Ascii_drawer(void* const eh_ptr, WINDOW* const win,
+				 Entity* const anchor, char anchor_char, pos_t offset = pos_t()):
 
-		eh_ptr{eh_ptr}, PC_ptr{PC_ptr}, prev_room_ptr{this->PC_ptr->get_room()},
-		PC_pos{win->_maxx/2, win->_maxy/2}, src_win{win},
+		eh_ptr{eh_ptr}, anchor{anchor},
+		// prev_room_ptr{},
+		
+		anchor_pos{dynamic_cast<Comps::Position&>(anchor->get_component_with_name("position")).get_value_ref()},
+		prev_anchor_pos{anchor_pos},
+		anchor_pos_in_screen{win->_maxx/2, win->_maxy/2},
+		anchor_obj_char{anchor_char},
+		
+		src_win{win},
 		varr{(unsigned)win->_maxy, (unsigned)win->_maxx, offset}
 		//varr{20,20, offset}
 	{
@@ -116,14 +121,21 @@ private:
 	static const char wall_char = '#';
 	static const char floor_char = '.';
 
-	static const char PC_char = '@';
+	//static const char PC_char = '@';
 
-	Event_handler* const eh_ptr;
+	//Event_handler* const eh_ptr;
+	void* const eh_ptr; // DEPRECATED currently
 
-	Player* const PC_ptr;
-	Room* prev_room_ptr;
-	pos_t PC_pos;
-	pos_t prev_PC_pos;
+	Entity* const anchor;
+	//Room* prev_room_ptr;
+	
+	// the position which we are anchored to
+	pos_t& anchor_pos;
+	pos_t prev_anchor_pos;
+	
+	// the position where we want the anchored position to be in in the screen
+	pos_t anchor_pos_in_screen;
+	char anchor_obj_char;
 
 	WINDOW* src_win;
 	vis_array varr;
@@ -164,7 +176,5 @@ struct nc_border_t {
 
 char debug_uint_to_char(unsigned i);
 //void draw_rectangle(WINDOW* win, const pos_t& pos, const dim_t& dim, const nc_border_t& bor);
-
-void vd_draw_obj(WINDOW* win, const World_object* const obj_ptr, const pos_t& draw_pos);
 
 #endif // NC_DRAWING_FUNCTIONS_HH

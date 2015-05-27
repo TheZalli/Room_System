@@ -2,17 +2,11 @@
 #define ROOM_HH
 
 #include "coordinates.hh"
-#include "world_object.hh"
+#include "entity.hh"
 #include <string>
 #include <cstddef>
-#include <memory>
 #include <set>
 //#include <assert.h>
-
-//#include <boost/ptr_container/ptr_set.hpp>
-/*#include <boost/bimap.hpp>
-#include <boost/bimap/multiset_of.hpp>
-#include <boost/bimap/unordered_set_of.hpp>*/
 
 using namespace Coordinates;
 namespace Room_System {
@@ -27,18 +21,7 @@ enum room_type {
 class Room
 {
 public:
-	/*struct wp_obj_comp_key {
-		bool operator ()(const std::weak_ptr<World_object>& o1, const std::weak_ptr<World_object>& o2) {
-			return (*o1.lock() < *o2.lock());
-		}
-	};*/
-	//typedef std::set<std::weak_ptr<World_object>, wp_obj_comp_key> room_obj_set;
-	struct p_obj_comp_key {
-			bool operator ()(const World_object* o1, const World_object* o2) {
-				return (*o1 < *o2);
-			}
-		};
-	typedef std::set<World_object*, p_obj_comp_key> room_obj_set;
+	typedef std::set<const Entity*, ent_id_key> room_obj_set;
 
 	//---
 
@@ -48,21 +31,15 @@ public:
 		Room* room_to;	// the room where the transition leads to
 		pos_t pos_to;	// the position in the room where the transition leads to
 		area_t area_from;	// transition area
-		World_object* obj_associated;
+		Entity* obj_associated;
 		room_tr* other_way_room_tr;
 		// the object this is associated with. if this is null pointer then there is no object
 		//world_object const* obj_associated;
 
 		room_tr(Room* const room_to, const pos_t& pos_to, const area_t& area_from,
-				World_object* obj_associated = nullptr,
+				Entity* obj_associated = nullptr,
 				room_tr* other_way_room_tr = nullptr);
-		//room_tr(const Room* leads_to, const pos_t& pos_to, const area_t& area_from, world_object* const object_associated);
-		// automatically adds the object
-		//room_tr(Room* const leads_to, const pos_t& pos_to, const area_t& area_from, world_object* object_associated);
 
-		/*bool operator<(const room_tr& rhs) const {
-			return leads_to->id < rhs.leads_to->id;
-		}*/
 		inline bool operator==(const room_tr& rhs) const {
 			return area_from.pos1 == rhs.area_from.pos1;
 		}
@@ -75,7 +52,7 @@ public:
 		} // remember to call this function after the constructor in the Room functions
 
 		inline room_tr(Room* const room_in, Room* const room_to, const pos_t& pos_to, const area_t& area_from,
-				World_object* obj_associated = nullptr, room_tr* other_way_room_tr = nullptr):
+				Entity* obj_associated = nullptr, room_tr* other_way_room_tr = nullptr):
 
 			room_tr(room_to, pos_to, area_from, obj_associated, other_way_room_tr)
 		{
@@ -119,47 +96,34 @@ public:
 	bool is_outside_floor(pos_t pos) const;
 	pos_t how_much_outside(pos_t pos) const;
 
-	//scr_dim_t get_scrdim() const	{ return scr_dim_t(shape); }
-
-	void add_object(World_object* obj);
-	bool has_object(World_object* const obj);
-	void remove_object(World_object* obj);
-
+	void add_entity(const Entity* ent_ptr);
+	bool has_entity(const Entity* ent_ptr);
+	void remove_entity(const Entity* ent_ptr);
 
 	void add_room_tr(room_tr rtr);
 	//void add_bi_room_tr(room_tr rtr);
 
 	//inline void add_room_tr_wobj(room_tr rtr, World_object* object_associated);
 
-	void add_room_tr_wobj(Room* const leads_to, const pos_t pos_to, World_object* object_associated, bool two_way = true);
+	//void add_room_tr_wobj(Room* const leads_to, const pos_t pos_to, World_object* object_associated, bool two_way = true);
 
 	//void add_bi_room_tr_wobj(room_tr rtr, World_object* object_associated);
 	//void add_bi_room_tr_wobj(Room* const leads_to, const pos_t pos_to, World_object* object_associated);
 
-	void add_door(Room* const second_room, const pos_t pos_to, door* door_in_first);
+	/*void add_door(Room* const second_room, const pos_t pos_to, door* door_in_first);
 	static void make_door	(bool is_vertical,
 							 Room* const room1,	Room* const room2,
 							 const pos_t& pos1,	const pos_t& pos2,
-							 const dim_t& dim, bool is_closed = true);
+							 const dim_t& dim, bool is_closed = true);*/
 
 	const room_tr& get_room_tr(const pos_t& at) const;
 	const room_tr_vector& get_room_trs() const;
 
-	const room_obj_set& get_objects() const;
-
-	//friend void World_object::set_room(Room* room);//, pos_t to);
-	//friend void World_object::move_to_room(Room* room_ptr, pos_t pos);
-	friend std::pair<Room*, pos_t> World_object::check_room_transitions_on(pos_t pos) const;
-	friend bool World_object::is_allowed_pos(pos_t p) const;
+	const room_obj_set& get_entities() const;
 
 	const unsigned id{++prev_id};
 private:
 	static unsigned prev_id;
-
-	/*typedef boost::bimaps::bimap<
-			boost::bimaps::multiset_of<room_tr>,
-			boost::bimaps::unordered_set_of<area_t, boost::hash<area_t>, overlap_key> >
-			room_tr_map;*/
 
 	// currently contains only the x,y dimensions
 	// 0,0 is the upperleftmost part of the floor
@@ -177,19 +141,15 @@ private:
 	// name of the room, eg. "kitchen"
 	std::string name;
 
-	/*// a bidirectional map for doorways
-	room_tr_map room_trs;*/
-
 	// a set for room transitions, eg doorways, windows, cojoined room borders
 	room_tr_vector transitions;
 
 	// a set for objects in the room
 	//std::set<world_object> objects;
 	//boost::ptr_set<World_object> objects;
-	room_obj_set objects;
+	room_obj_set entities;
 
 	room_type type;
-
 };
 
 //std::size_t hash_value(const Room&);

@@ -1,6 +1,5 @@
-#include "event_handler.hh"
-//#include "room.hh"
-#include "pc.hh"
+#include "room.hh"
+#include "entity_manager.hh"
 #include "nc_drawing_functions.hh"
 //#include <iostream>
 #include <ncurses.h>
@@ -30,26 +29,20 @@ void init_ncurses() {
 
 int main()
 {
+	Entity_manager ent_man{};
+
 	Room* r1 = new Room{{9,4}, "the first room"};
 	Room* r2 = new Room{{7,4}, "the second room"};
 	Room* r3 = new Room{{3,9}, "the magic room", corridor};
 	Room* r4 = new Room{{32,32}, "the big room"};
 
-	Player* player_ptr = new Player{{2,2}, {1,1}, "Albert A Asimov"};
-	//PC* player_ptr{new PC{{2,2}, {1,1}, "Albert A Asimov"}};
-	r1->add_object(player_ptr);
+	//Entity* player_ptr = ent_man.add_entity_from_archetype(r1, "player");
 
-	/*door* door1{new door{{-1,1}, {1,2}, true}};
-	door* door2{new door{{5,-1}, {1,2}, false}};
-	door* door3 = new door(pos_t(2,-1), dim_t(1,1), false);
-	r1->add_door(r2, pos_t(8,2), door1);
-	r1->add_door(r3, pos_t(2,10), door2);
-	r3->add_door(r2, pos_t(3,5), door3);*/
-
-	Room::make_door(true,  r1, r2, {-1,1}, {7,2}, {1,2});
-	Room::make_door(false, r1, r3, {5,-1}, {1,9}, {2,1});
-	//Room::make_door(false, r2, r3, {1,4}, {1,-1}, {1,1});
-	Room::make_door(true,  r1, r4, {9,2}, {-1,10}, {1,2});
+	// the ownership is given to the entity
+	Comps::Position* pc_pos = new Comps::Position(pos_t{2,2});
+	Comps::Name* pc_name = new Comps::Name("Albert A Asimov");
+	//Entity* player_ptr = ent_man.add_entity(r1, std::vector<Comps::Component*>{pc_pos, pc_name});
+	Entity* player_ptr = ent_man.add_entity_from_archetype(r1, "player", {pc_pos, pc_name});
 
 	init_ncurses();
 	//BOR_RECTANGLE
@@ -58,39 +51,21 @@ int main()
 	getmaxyx(stdscr, scrdim.l, scrdim.w);
 	int ch{0};
 
-	Event_handler eh{};
-	Ascii_drawer adr(&eh, stdscr, player_ptr);
-	//adr.fill_vis_array('~');
+	Ascii_drawer adr(nullptr, stdscr, player_ptr, '@');
 
 	while(true) { // main loop
 		clear();
-		//mvprintw(scrdim.l/2, (scrdim.w - 6)/2, "%3d:%c", ch, ch);
-		//draw_room(stdscr, &r2, pos_t(11,4), bor_rectangle);
-		//draw_room(stdscr, &r1, pos_t(22,5), bor_rectangle);
-
-		//view_draw(stdscr, player_ptr, pos_t(22,22));
 
 		adr.draw_vis_array();
-
 		refresh();
-
-		//break; // debug
 
 		bool move_key_pressed = false;
 		pos_t displ{};
 
 
 		ch = getch();
-		if (ch == 3) break; // ctrl+c
-		/*else if (ch == 'o') {
-			door1->open();
-			door2->open();
-		}
-		else if (ch == 'c') {
-			door1->close();
-			door2->close();
-		}*/
-
+		if (ch == 3) break; // break on ctrl+c
+		
 		else if (ch == -1) { // update window size
 			getmaxyx(stdscr, scrdim.l, scrdim.w);
 			ch = 0;
@@ -109,14 +84,15 @@ int main()
 		}
 
 		if (move_key_pressed) {
-			pos_t from = player_ptr->get_pos();
+			pc_pos->add_pos(displ);
+			//pos_t from = player_ptr->get_pos();
 			//if (eh.move_object(player_ptr, displ)) {
 			//	adr.shift_vis_array(displ);
-			eh.add_event(e_move(player_ptr, from, player_ptr->get_pos()));
+			//eh.add_event(e_move(player_ptr, from, player_ptr->get_pos()));
 			//}
 		}
 
-		eh.turn();
+		//eh.turn();
 		adr.update();
 	}
 

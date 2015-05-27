@@ -29,89 +29,31 @@ char debug_uint_to_char(unsigned i) {
 	else return '-';
 }
 
-void vd_draw_obj(WINDOW* win, const World_object* const obj_ptr, const pos_t& draw_pos)
-{
-	const pos_t draw_pos2 = draw_pos + obj_ptr->get_dim();
-	//pos_t draw_pos{0,0};
-	try {
-		if (typeid(*obj_ptr) == typeid(door)) {
-			const door& d = dynamic_cast<door&>(const_cast<World_object&>(*obj_ptr));
-			chtype ch_to_draw1;
-			chtype ch_to_draw2;
-
-			bool is_vertical = d.get_is_vertical();
-			if (is_vertical) {
-				ch_to_draw1 = d.get_is_closed() ? 'I' : '-'; //ACS_S1;
-			} else {
-				ch_to_draw1 = d.get_is_closed() ? '=' : '/';
-			}
-			mvwaddch(win, draw_pos.y, draw_pos.x, ch_to_draw1);
-
-			if (d.get_length() == 2) {
-				if (is_vertical) {
-					ch_to_draw2 = d.get_is_closed() ? 'I' : '-';//ACS_S9;
-				} else {
-					ch_to_draw2 = d.get_is_closed() ? '=' : '\\';
-				}
-				mvwaddch(win, draw_pos2.y, draw_pos2.x, ch_to_draw2);
-			}
-		} /*else if (typeid(*obj_ptr) == typeid(PC)) {
-			const PC& pc = dynamic_cast<PC&>(const_cast<World_object&>(*obj_ptr));
-
-			mvwaddch(win, draw_pos.y, draw_pos.x, '@');
-
-		}*/
-	} catch (std::bad_typeid) {
-		assert(0);
-	}
-}
-
-
 void Ascii_drawer::update(bool update_all)
 {
 	if (update_all) {
 		clear_vis_array();
-		varr.draw_room(PC_ptr->get_room(), PC_pos - PC_ptr->get_pos() - pos_t{1,1}); // note: get_pos gives local pos in room
+		varr.draw_room(anchor->get_room_in(), anchor_pos_in_screen - anchor_pos); // note: anchor_pos is local pos in room
 	} else {
-		//varr.put(prev_PC_pos.x, prev_PC_pos.y, floor_char);
-
-		//if (prev_room_ptr != PC_ptr->get_room()) {
-		std::vector<world_event> etrr_vector = eh_ptr->get_events_by_obj_n_type(PC_ptr, e_tr_room_id);
-		//mvwaddch(src_win, 0,0, debug_uint_to_char(etrr_vector.size())); // DEBUG
-		eh_ptr->debug_msg << std::string("tr_room events: ") << etrr_vector.size() << std::endl;
-		if (etrr_vector.size() != 0) {
-			eh_ptr->debug_msg << std::string("tr: ") << static_cast<e_tr_room&>(etrr_vector[0]).rtr.to_string();
-			varr.draw_room(PC_ptr->get_room(), PC_pos - PC_ptr->get_pos() - pos_t{1,1});
-
-			prev_room_ptr = PC_ptr->get_room();
+		if (prev_anchor_pos != anchor_pos) { // we have moved
+			shift_vis_array(anchor_pos - prev_anchor_pos);
 		}
 	}
-	//varr.put(PC_pos.x, PC_pos.y, PC_char);
-
-	prev_PC_pos = PC_pos;
+	//varr.put(anchor_pos_in_screen.x, anchor_pos_in_screen.y, anchor_obj_char);
+	
+	prev_anchor_pos = anchor_pos;
 }
 
 void Ascii_drawer::draw_vis_array()
 {
-	/*for (unsigned y = 0; y < varr.rows; ++y) {
-		for (unsigned x = 0; x < varr.cols; ++x) {
-			//mvwaddch(src_win, j + varr.col_offset, i + varr.col_offset, varr.at(i,j));
-			move(y + varr.offset.y, x + varr.offset.x);
-			waddch(src_win, varr.at(x,y));
-
-		}
-	}*/
 	for (int y = src_win->_begy; y <= src_win->_maxy; ++y) {
 		for (int x = src_win->_begx; x <= src_win->_maxx; ++x) {
-			//mvwaddch(src_win, j + varr.col_offset, i + varr.col_offset, varr.at(i,j));
 			move(y, x);
 			waddch(src_win, varr.at_win(x, y, src_win));
 		}
 	}
-	mvwaddstr(src_win, 0, 0, eh_ptr->debug_msg.str().c_str()); // DEBUG
-	eh_ptr->debug_msg.str(std::string());
 
-	mvwaddch(src_win, PC_pos.y, PC_pos.x, PC_char);
+	mvwaddch(src_win, anchor_pos_in_screen.y, anchor_pos_in_screen.x, anchor_obj_char);
 }
 
 void Ascii_drawer::vis_array::fill(const char c)

@@ -8,7 +8,7 @@ unsigned Room::prev_id = (unsigned)-1;
 
 const Room::room_tr Room::none_room_tr = Room::room_tr{nullptr, {}, {}, nullptr, nullptr};
 
-Room::Room(): /*id{Room::prev_id++},*/ dim{1,1}, name{}, transitions{}, type{small_room}
+Room::Room(): dim{1,1}, name{}, transitions{}, type{small_room}
 {}
 
 Room::Room(dim_t dim, std::string name, room_type type):
@@ -40,22 +40,21 @@ pos_t Room::how_much_outside(pos_t pos) const {
 
 // ---
 
-void Room::add_object(World_object* obj)
+void Room::add_entity(const Entity* ent_ptr)
 {
-	objects.insert(World_object::get_obj_ptr_by_id(obj->id));
-	obj->set_room(this);
+	entities.insert(ent_ptr);
 }
 
-bool Room::has_object(World_object* const obj)
+bool Room::has_entity(const Entity* ent_ptr)
 {
-	if (!obj) return false; // is a null pointer
-	if (objects.size() == 0) return false;
-	return (objects.find(obj) != objects.end());
+	if (!ent_ptr) return false; // is a null pointer
+	if (entities.size() == 0) return false;
+	return (entities.find(const_cast<Entity*>(ent_ptr)) != entities.cend());
 }
 
-void Room::remove_object(World_object* obj)
+void Room::remove_entity(const Entity* ent_ptr)
 {
-	objects.erase(obj);
+	entities.erase(ent_ptr);
 }
 
 // ---
@@ -89,7 +88,7 @@ void Room::add_room_tr(room_tr rtr)
 	add_object(object_associated);
 }*/
 
-void Room::add_room_tr_wobj(Room* const leads_to, const pos_t pos_to, World_object* object_associated, bool two_way)
+/*void Room::add_room_tr_wobj(Room* const leads_to, const pos_t pos_to, World_object* object_associated, bool two_way)
 {
 
 	room_tr rtr{this, leads_to, pos_to, object_associated->get_area(), object_associated};
@@ -97,8 +96,8 @@ void Room::add_room_tr_wobj(Room* const leads_to, const pos_t pos_to, World_obje
 
 	//add_room_tr_wobj(rtr, object_associated);
 	add_room_tr(rtr);
-	add_object(object_associated);
-}
+	add_entity(object_associated);
+}*/
 
 
 /*void Room::add_bi_room_tr_wobj(Room::room_tr rtr, World_object* object_associated)
@@ -119,7 +118,7 @@ void Room::add_room_tr_wobj(Room* const leads_to, const pos_t pos_to, World_obje
 
 }*/
 
-void Room::add_door(Room* const second_room, const pos_t pos_to, door* door_in_first)
+/*void Room::add_door(Room* const second_room, const pos_t pos_to, door* door_in_first)
 {
 	door_in_first->set_room(this);
 	room_tr rtr{this, second_room, pos_to, door_in_first->get_area(), door_in_first};
@@ -132,7 +131,7 @@ void Room::add_door(Room* const second_room, const pos_t pos_to, door* door_in_f
 	//door* second_door = door_in_first->get_linked_version(pos_to);
 	//door_in_first->link(second_door);
 
-	objects.insert(door_in_first);
+	entities.insert(door_in_first);
 	//second_room->objects.insert(second_door);
 }
 
@@ -143,8 +142,8 @@ void Room::make_door(bool is_vertical, Room* const room1, Room* room2, const pos
 	rtr.generate_reverse_tr();
 	room1->add_room_tr(rtr);
 
-	room1->objects.insert(dr_ptr);
-}
+	room1->entities.insert(dr_ptr);
+}*/
 // ---
 
 const Room::room_tr& Room::get_room_tr(const pos_t& at) const
@@ -166,9 +165,9 @@ const Room::room_tr_vector& Room::get_room_trs() const
 	return transitions;
 }
 
-const Room::room_obj_set& Room::get_objects() const
+const Room::room_obj_set& Room::get_entities() const
 {
-	return objects;
+	return entities;
 }
 
 
@@ -185,7 +184,7 @@ const Room::room_obj_set& Room::get_objects() const
 }*/
 
 
-std::pair<Room*, pos_t> World_object::check_room_transitions_on(pos_t pos) const
+/*std::pair<Room*, pos_t> World_object::check_room_transitions_on(pos_t pos) const
 {
 	const Room::room_tr& rtr = this->room_where->get_room_tr(pos);
 	if (!rtr.room_to) return std::pair<Room*, pos_t>(nullptr, rtr.pos_to);
@@ -198,7 +197,7 @@ bool World_object::is_allowed_pos(pos_t p) const
 {
 	if (room_where->get_room_tr(p).room_to != nullptr) return true; // p is in a room_tr
 	else return !room_where->is_outside_floor(p);
-}
+}*/
 
 /*std::size_t hash_value(const Room& r)
 {
@@ -208,12 +207,13 @@ bool World_object::is_allowed_pos(pos_t p) const
 }*/
 
 Room::room_tr::room_tr(Room* const room_to, const pos_t& pos_to, const area_t& area_from,
-					   World_object* obj_associated,
+					   Entity* obj_associated,
 					   room_tr* other_way_room_tr):
 	/*room_in{nullptr},*/ room_to{room_to},
 	pos_to{pos_to}, area_from{area_from},
 	obj_associated{obj_associated},
-	other_way_room_tr{other_way_room_tr} {}
+	other_way_room_tr{other_way_room_tr}
+{}
 
 
 

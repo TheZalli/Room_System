@@ -9,21 +9,8 @@
 
 namespace Coordinates {
 
-namespace dist {
-	typedef int dist_t;
-
-	//static const int max_dist = std::numeric_limits<int>::max();
-	//static const int min_dist = std::numeric_limits<int>::min();
-}
-using namespace dist;
-
-namespace length {
-	typedef unsigned length_t;
-
-	//static const long int max_length = std::numeric_limits<unsigned>::max();
-	//static const long int min_length = std::numeric_limits<unsigned>::min();
-}
-using namespace length;
+typedef int dist_t;
+typedef unsigned length_t;
 
 // ---
 
@@ -76,6 +63,9 @@ struct pos_t {
 
 // ---
 
+// a datatype for surface areas (if length_t is m this is m²)
+typedef unsigned long surf_area_t;
+
 struct dim_t {
 	length_t w; // width in x coordinate
 	length_t l; // length in y coordinate
@@ -86,7 +76,7 @@ struct dim_t {
 
 	pos_t to_pos() const { return pos_t((dist_t)w, (dist_t)l); }
 
-	unsigned get_surf_area() const { return w*l; }
+	surf_area_t get_surf_area() const { return w*l; }
 
 	dim_t operator+(const dim_t& p) const;
 	dim_t operator-(const dim_t& p) const;

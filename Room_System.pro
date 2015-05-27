@@ -7,24 +7,29 @@ CONFIG += C++11
 QMAKE_LFLAGS += -lpanel
 QMAKE_LFLAGS += -lcurses
 
+QMAKE_CXXFLAGS += -std=c++11
+
 SOURCES += main.cpp \
     room.cpp \
     coordinates.cpp \
     nc_drawing_functions.cpp \
-    world_object.cpp \
-    materials.cpp \
-    character.cpp \
-    pc.cpp \
-    event_handler.cpp
+    entity.cpp \
+    Components/component.cpp \
+    Components/coordinate_comps.cpp \
+    entity_manager.cpp \
+    Entity_archetypes/entity_archetype.cpp \
+    component_manager.cpp
 
 HEADERS += \
     room.hh \
     coordinates.hh \
     nc_drawing_functions.hh \
-    world_object.hh \
-    materials.hh \
-    character.hh \
-    pc.hh \
-    ../event_handler.h \
-    event_handler.hh
+    entity.hh \
+    Components/component.hh \
+    Components/coordinate_comps.hh \
+    Components/components_include.hh \
+    entity_manager.hh \
+    Entity_archetypes/entity_archetype.hh \
+    helper_functions.hh \
+    component_manager.hh
 
