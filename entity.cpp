@@ -5,17 +5,17 @@ using namespace Room_System;
 
 unsigned Entity::prev_uid = (unsigned)-1; // initialize uid
 
-Entity::Entity(): room_in{nullptr}, comps{}
+Entity::Entity(): comps{}
 {
 }
 
-Entity::Entity(Room* room_in, std::initializer_list<Comps::Component*> components):
-	room_in{room_in}, comps{components}
+Entity::Entity(std::initializer_list<Comps::Component*> components):
+	comps{components}
 {
 }
 
-Entity::Entity(Room* room_in, const std::vector<Comps::Component*>& components):
-	room_in{room_in}, comps{components}
+Entity::Entity(const std::vector<Comps::Component*>& components):
+	comps{components}
 {
 }
 

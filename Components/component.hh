@@ -3,6 +3,8 @@
 
 #include <string>
 #include <assert.h>
+#include <set>
+#include <map>
 
 namespace Room_System {
 namespace Comps { // namespace for all components (because I don't like adding cmp_ or something in fromt of every component name)
@@ -13,7 +15,16 @@ public:
 	Component() {}
 	virtual ~Component() {}
 	
+	/**
+	 * @brief get_name
+	 * @return a static name that should be same for all of the components of same type
+	 */
 	virtual std::string get_name() const = 0;
+	
+	/**
+	 * @brief get_value_str
+	 * @return a string representation of the value of the component
+	 */
 	virtual std::string get_value_str() const = 0;
 	
 	/**
@@ -22,9 +33,15 @@ public:
 	 */
 	virtual Component* copy() const = 0;
 	
+	/* *
+	 * @brief subscribe_by_default
+	 * @return true if an entity with this component should be subscribed to the watched entity list of the entity manager
+	 */
+	//virtual bool watch_by_default() const { return false; }//*/
 private:
 	//const std::string& name_ref;
 };
+
 
 
 /**

@@ -18,7 +18,7 @@ SOURCES += main.cpp \
     Components/coordinate_comps.cpp \
     entity_manager.cpp \
     Entity_archetypes/entity_archetype.cpp \
-    component_manager.cpp
+    event_manager.cpp
 
 HEADERS += \
     room.hh \
@@ -31,5 +31,5 @@ HEADERS += \
     entity_manager.hh \
     Entity_archetypes/entity_archetype.hh \
     helper_functions.hh \
-    component_manager.hh
+    event_manager.hh
 

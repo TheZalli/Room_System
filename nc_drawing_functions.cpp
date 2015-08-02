@@ -31,17 +31,31 @@ char debug_uint_to_char(unsigned i) {
 
 void Ascii_drawer::update(bool update_all)
 {
-	if (update_all) {
+	debug_msgs << "pos: " << anchor_pos.to_string() << " old pos: " << prev_anchor_pos.to_string() << std::endl;
+	
+	if (update_all || (prev_anchor_room != anchor_room)) {
+		prev_anchor_room = anchor_room;
+		prev_anchor_pos = anchor_pos;
+		
 		clear_vis_array();
-		varr.draw_room(anchor->get_room_in(), anchor_pos_in_screen - anchor_pos); // note: anchor_pos is local pos in room
+		varr.set_offset({0,0});
+		varr.draw_room(anchor_room, anchor_pos_in_screen - anchor_pos); // note: anchor_pos is local pos in room
+		
+		const Room::room_tr_vector& trs = anchor_room->get_room_trs();
+		for (Room::room_tr_vector::const_iterator it = trs.begin();
+			 it != trs.cend(); ++it)
+		{
+			varr.draw_room(it->room_to, anchor_pos_in_screen - anchor_pos + it->area_from.get_pos1() - it->pos_to);
+		}
+		
 	} else {
 		if (prev_anchor_pos != anchor_pos) { // we have moved
 			shift_vis_array(anchor_pos - prev_anchor_pos);
+			prev_anchor_pos = anchor_pos;
 		}
 	}
-	//varr.put(anchor_pos_in_screen.x, anchor_pos_in_screen.y, anchor_obj_char);
 	
-	prev_anchor_pos = anchor_pos;
+	debug_msgs << "varr offset: " << varr.get_offset().to_string() << " all updated: " << update_all << std::endl;
 }
 
 void Ascii_drawer::draw_vis_array()
@@ -84,17 +98,16 @@ void Ascii_drawer::vis_array::draw_room(const Room* const r, const pos_t& pos)
 
 				put(x + pos.x, y + pos.y, wall_char);
 			}
+			else {
+				put(x + pos.x, y + pos.y, floor_char);
+			}
 		}
 	}
 
 	for (const Room::room_tr& rtr : r->get_room_trs()) {
 		pos_t pos1 = rtr.area_from.get_pos1();
-		pos_t pos2; // = rtr.area_from.get_pos2();
-
-		put(pos.x + pos1.x + 1, pos.y + pos1.y + 1, 'd');
-		if ((pos2 = rtr.area_from.get_pos2()) != pos1) {
-			put(pos.x + pos2.x + 1, pos.y + pos2.y + 1, 'd');
-		}
+		//*debug_msgs_ptr << "rtr pos: " << pos1.to_string() << std::endl;
+		put(pos.x + pos1.x, pos.y + pos1.y, floor_char);
 
 	}
 
@@ -125,6 +138,13 @@ void Ascii_drawer::vis_array::draw_room(const Room* const r, const pos_t& pos)
 	}*/
 
 }
+
+/*Room* Ascii_drawer::get_room_the_anchor_is_in() const
+{
+	Comps::Position& p = dynamic_cast<Comps::Position&>(
+							 anchor->get_component_with_name(std::string("position")) );
+	return p.get_room_ptr();
+}*/
 
 
 

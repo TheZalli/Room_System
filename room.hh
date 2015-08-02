@@ -2,16 +2,17 @@
 #define ROOM_HH
 
 #include "coordinates.hh"
-#include "entity.hh"
+//#include "entity.hh"
+//#include <set>
 #include <string>
 #include <cstddef>
-#include <set>
+#include <vector>
 //#include <assert.h>
 
 using namespace Coordinates;
 namespace Room_System {
 
-enum room_type {
+enum class room_type {
 	small_room,	// a room where you can see everywhere
 	large_room,	// a hall where you can't see from one end to another
 	corridor,	// a narrow room (l or w is 1-3)
@@ -21,7 +22,7 @@ enum room_type {
 class Room
 {
 public:
-	typedef std::set<const Entity*, ent_id_key> room_obj_set;
+	//typedef std::set<const Entity*, ent_id_key> room_obj_set;
 
 	//---
 
@@ -31,13 +32,13 @@ public:
 		Room* room_to;	// the room where the transition leads to
 		pos_t pos_to;	// the position in the room where the transition leads to
 		area_t area_from;	// transition area
-		Entity* obj_associated;
+		//Entity* obj_associated;
 		room_tr* other_way_room_tr;
 		// the object this is associated with. if this is null pointer then there is no object
 		//world_object const* obj_associated;
 
 		room_tr(Room* const room_to, const pos_t& pos_to, const area_t& area_from,
-				Entity* obj_associated = nullptr,
+				//Entity* obj_associated = nullptr,
 				room_tr* other_way_room_tr = nullptr);
 
 		inline bool operator==(const room_tr& rhs) const {
@@ -52,9 +53,9 @@ public:
 		} // remember to call this function after the constructor in the Room functions
 
 		inline room_tr(Room* const room_in, Room* const room_to, const pos_t& pos_to, const area_t& area_from,
-				Entity* obj_associated = nullptr, room_tr* other_way_room_tr = nullptr):
+				/*Entity* obj_associated = nullptr,*/ room_tr* other_way_room_tr = nullptr):
 
-			room_tr(room_to, pos_to, area_from, obj_associated, other_way_room_tr)
+			room_tr(room_to, pos_to, area_from, /*obj_associated,*/ other_way_room_tr)
 		{
 			set_room_in(room_in);
 		}
@@ -84,7 +85,7 @@ public:
 	// ---
 
 	Room();
-	Room(dim_t dim, std::string name, room_type type = small_room);
+	Room(dim_t dim, std::string name, room_type type = room_type::small_room);
 
 	// initializes the unique id counter, currently unnecessary
 	static void Init(unsigned first_id = (unsigned)-1);
@@ -96,44 +97,32 @@ public:
 	bool is_outside_floor(pos_t pos) const;
 	pos_t how_much_outside(pos_t pos) const;
 
-	void add_entity(const Entity* ent_ptr);
-	bool has_entity(const Entity* ent_ptr);
-	void remove_entity(const Entity* ent_ptr);
+	//void add_entity(const Entity* ent_ptr);
+	//bool has_entity(const Entity* ent_ptr);
+	//void remove_entity(const Entity* ent_ptr);
 
 	void add_room_tr(room_tr rtr);
-	//void add_bi_room_tr(room_tr rtr);
+	void add_bi_room_tr(room_tr rtr);
 
-	//inline void add_room_tr_wobj(room_tr rtr, World_object* object_associated);
-
-	//void add_room_tr_wobj(Room* const leads_to, const pos_t pos_to, World_object* object_associated, bool two_way = true);
-
-	//void add_bi_room_tr_wobj(room_tr rtr, World_object* object_associated);
-	//void add_bi_room_tr_wobj(Room* const leads_to, const pos_t pos_to, World_object* object_associated);
-
-	/*void add_door(Room* const second_room, const pos_t pos_to, door* door_in_first);
-	static void make_door	(bool is_vertical,
-							 Room* const room1,	Room* const room2,
-							 const pos_t& pos1,	const pos_t& pos2,
-							 const dim_t& dim, bool is_closed = true);*/
 
 	const room_tr& get_room_tr(const pos_t& at) const;
 	const room_tr_vector& get_room_trs() const;
 
-	const room_obj_set& get_entities() const;
+	//const room_obj_set& get_entities() const;
 
 	const unsigned id{++prev_id};
 private:
 	static unsigned prev_id;
 
 	// currently contains only the x,y dimensions
-	// 0,0 is the upperleftmost part of the floor
-	// walls are at -1 and dim+1 rows/colums
+	// 1,1 is the upperleftmost part of the floor
+	// walls are at 0 and dim+1 rows/colums
 	/* 8x2 room
-	 -1012345678
-   -1 ##########
-	0 #--------#
+	  0123456789
+    0 ##########
 	1 #--------#
-	2 ##########
+	2 #--------#
+	3 ##########
 	*/
 	//shape_t shape;
 	dim_t dim;
@@ -147,7 +136,7 @@ private:
 	// a set for objects in the room
 	//std::set<world_object> objects;
 	//boost::ptr_set<World_object> objects;
-	room_obj_set entities;
+	//room_obj_set entities;
 
 	room_type type;
 };

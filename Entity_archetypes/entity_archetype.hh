@@ -25,7 +25,7 @@ struct Entity_archetype {
 	 * Can be smaller than the archetypes component amount and the rest use the archetypes default value
 	 * @return the pointer to the entity made based on this archetype
 	 */
-	Entity* make_entity(Room* room_in, std::initializer_list<Comps::Component*> comp_values) const throw(std::invalid_argument);
+	Entity* make_entity(std::initializer_list<Comps::Component*> comp_values) const throw(std::invalid_argument);
 };
 
 typedef std::map<std::string, Entity_archetype*> ent_arch_t;
@@ -45,11 +45,13 @@ public:
 		else return false;
 	}
 
-	Entity* make_entity_from_archetype(const std::string& name, Room* room_in, std::initializer_list<Comps::Component*> comp_values) const throw(std::out_of_range)
+	Entity* make_entity_from_archetype(const std::string& name, std::initializer_list<Comps::Component*> comp_values) const throw(std::out_of_range)
 	{
-		return entity_archetypes.at(name)->make_entity(room_in, comp_values);
+		return entity_archetypes.at(name)->make_entity(comp_values);
 	}
-	std::vector<Comps::Component*> get_comps_of_archt(const std::string& name) const throw(std::out_of_range);
+	
+	const std::vector<Comps::Component*>& get_comps_of_archt(const std::string& name) const throw(std::out_of_range);
+	
 private:
 	ent_arch_t entity_archetypes;
 

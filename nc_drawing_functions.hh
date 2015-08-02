@@ -2,8 +2,12 @@
 #define NC_DRAWING_FUNCTIONS_HH
 //#include "coordinates.hh"
 #include "room.hh"
+#include "Components/components_include.hh"
+#include "entity.hh"
+
 #include <ncurses.h>
 #include <string>
+#include <sstream>
 #include <assert.h>
 
 using namespace Room_System;
@@ -13,9 +17,9 @@ class Ascii_drawer {
 public:
 	class vis_array {
 	public:
-		vis_array(const unsigned rows, const unsigned cols, pos_t offset = pos_t{}):
-			rows{rows}, cols{cols}, offset{offset} {//row_offset{0}, col_offset{0} {
-
+		vis_array(const unsigned rows, const unsigned cols, std::stringstream* debug_msgs_ptr = nullptr, const pos_t& offset = pos_t{}):
+			rows{rows}, cols{cols}, offset{offset}, debug_msgs_ptr{debug_msgs_ptr}
+		{
 			array = new char[this->rows * this->cols];
 			clear();
 
@@ -33,7 +37,6 @@ public:
 		}
 
 		void fill(const char c);
-		inline void clear() { fill(empty_char); }
 
 		inline void put(const unsigned x, const unsigned y, const char c) const {
 			//assert (x < cols); assert(y < rows);
@@ -60,6 +63,10 @@ public:
 			//col_offset += horizontal;
 			this->offset += offset;
 		}
+		
+		pos_t get_offset() const {
+			return offset;
+		}
 		void set_offset(pos_t offset) {
 			this->offset = offset;
 		}
@@ -71,33 +78,43 @@ public:
 			return pos_t(cols-1, rows-1);
 		}
 
+	private:
 		//const size_t rows;
 		//const size_t cols;
 		const unsigned rows;
 		const unsigned cols;
-
-		//long row_offset;
-		//long col_offset;
+		
 		pos_t offset;
-	private:
 		char* array;
+		
+		std::stringstream* debug_msgs_ptr;
 	};
 
 	Ascii_drawer(void* const eh_ptr, WINDOW* const win,
-				 Entity* const anchor, char anchor_char, pos_t offset = pos_t()):
+				 Entity* const anchor, char anchor_char, const pos_t& offset = pos_t()):
 
 		eh_ptr{eh_ptr}, anchor{anchor},
 		// prev_room_ptr{},
 		
-		anchor_pos{dynamic_cast<Comps::Position&>(anchor->get_component_with_name("position")).get_value_ref()},
+		//anchor_pos{0}, prev_anchor_pos{0},
+		anchor_room{dynamic_cast<Comps::Position&>(anchor->get_component_with_name("position")).get_room_ptr_ref()},
+		prev_anchor_room{anchor_room},
+		
+		anchor_pos{dynamic_cast<Comps::Position&>(anchor->get_component_with_name("position")).get_pos_ref()},
 		prev_anchor_pos{anchor_pos},
+		
 		anchor_pos_in_screen{win->_maxx/2, win->_maxy/2},
+		//anchor_pos_in_screen{15, 15},
 		anchor_obj_char{anchor_char},
 		
+		debug_msgs{},
+	  
 		src_win{win},
-		varr{(unsigned)win->_maxy, (unsigned)win->_maxx, offset}
+		varr{(unsigned)win->_maxy, (unsigned)win->_maxx, &debug_msgs, offset}
 		//varr{20,20, offset}
+		
 	{
+		
 		update(true);
 	}
 
@@ -105,8 +122,13 @@ public:
 	inline void clear_vis_array() { fill_vis_array(empty_char); }
 
 	void draw_vis_array();
-
+	
+	/**
+	 * @brief update updates the vis_array var
+	 * @param update_all True if we want to update all, false when we just shift the varr. Is overrided to true if a room transition has occurred for the anchor entity.
+	 */
 	void update(bool update_all = false);
+	
 	//void shift_vis_array(int horizontal, int vertical);
 	inline void shift_vis_array(pos_t offset) { varr.shift(offset); }
 	inline void set_vis_array_offset(pos_t offset) { varr.set_offset(offset); }
@@ -114,7 +136,19 @@ public:
 	inline void shift_vis_array_and_update(pos_t offset) {
 		shift_vis_array(offset); update();
 	}
-
+	
+	Room* const& get_room_the_anchor_is_in() const;
+	
+	void add_debug_message(const std::string& msg) {
+		debug_msgs << msg << std::endl;
+	}
+	
+	void print_debug_messages(bool clear_msgs = true) {
+		move(1,0);
+		printw(debug_msgs.str().c_str());
+		if (clear_msgs) debug_msgs.str(std::string());
+	}
+	
 private:
 	static const char empty_char = ' ';
 	static const char fog_char = '~';
@@ -130,17 +164,20 @@ private:
 	//Room* prev_room_ptr;
 	
 	// the position which we are anchored to
-	pos_t& anchor_pos;
+	Room* const& anchor_room;
+	Room* prev_anchor_room;
+	
+	const pos_t& anchor_pos;
 	pos_t prev_anchor_pos;
 	
 	// the position where we want the anchored position to be in in the screen
 	pos_t anchor_pos_in_screen;
 	char anchor_obj_char;
-
+	
+	std::stringstream debug_msgs;
+	
 	WINDOW* src_win;
 	vis_array varr;
-
-	//std::stringstream debug_msg;
 };
 
 

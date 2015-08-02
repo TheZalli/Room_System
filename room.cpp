@@ -6,9 +6,9 @@ using namespace Room_System;
 
 unsigned Room::prev_id = (unsigned)-1;
 
-const Room::room_tr Room::none_room_tr = Room::room_tr{nullptr, {}, {}, nullptr, nullptr};
+const Room::room_tr Room::none_room_tr = Room::room_tr(nullptr, {}, {}, nullptr);
 
-Room::Room(): dim{1,1}, name{}, transitions{}, type{small_room}
+Room::Room(): dim{1,1}, name{}, transitions{}, type{room_type::small_room}
 {}
 
 Room::Room(dim_t dim, std::string name, room_type type):
@@ -30,15 +30,16 @@ pos_t Room::how_much_outside(pos_t pos) const {
 	pos_t to_return{0,0};
 	const pos_t& pos_corner = dim.to_pos();
 
-	if (pos.x < 0) to_return.x = pos.x;
-	else to_return.x = pos.x - pos_corner.x;
-	if (pos.y < 0) to_return.y = pos.y;
-	else to_return.y = pos.y - pos_corner.x;
-
+	if (pos.x < 1) to_return.x = pos.x - 1;
+	else if (pos.x > pos_corner.x) to_return.x = pos.x - pos_corner.x;
+	
+	if (pos.y < 1) to_return.y = pos.y - 1;
+	else if (pos.y > pos_corner.y) to_return.y = pos.y - pos_corner.y;
+	
 	return to_return;
 }
 
-// ---
+/*/ ---
 
 void Room::add_entity(const Entity* ent_ptr)
 {
@@ -57,95 +58,29 @@ void Room::remove_entity(const Entity* ent_ptr)
 	entities.erase(ent_ptr);
 }
 
-// ---
+// ---*/
 
 void Room::add_room_tr(room_tr rtr)
 {
+	rtr.set_room_in(this);
 	transitions.push_back(rtr);
 	if (rtr.get_other_way_room_tr()) {
-		//rtr.room_to->transitions.insert(*rtr.get_other_way_room_tr());
 		rtr.room_to->transitions.push_back(*rtr.get_other_way_room_tr());
 	}
 }
 
-/*void Room::add_bi_room_tr(Room::room_tr rtr)
+void Room::add_bi_room_tr(Room::room_tr rtr)
 {
-	transitions.insert(rtr);
-
-	// the area for the transition on the other room
-	//area_t rev_rtr_area{rtr.pos_to, rtr.area_from.get_dim()};
-	//room_tr rev_rtr = room_tr(this, rtr.area_from.pos1, rev_rtr_area);
-	room_tr rev_rtr = *rtr.other_way_room_tr;
-
-	rtr.leads_to->transitions.insert(rev_rtr);
-}*/
-
-// ---
-
-/*void Room::add_room_tr_wobj(Room::room_tr rtr, World_object* object_associated)
-{
-	add_room_tr(rtr);
-	add_object(object_associated);
-}*/
-
-/*void Room::add_room_tr_wobj(Room* const leads_to, const pos_t pos_to, World_object* object_associated, bool two_way)
-{
-
-	room_tr rtr{this, leads_to, pos_to, object_associated->get_area(), object_associated};
-	if (two_way) rtr.generate_reverse_tr();
-
-	//add_room_tr_wobj(rtr, object_associated);
-	add_room_tr(rtr);
-	add_entity(object_associated);
-}*/
-
-
-/*void Room::add_bi_room_tr_wobj(Room::room_tr rtr, World_object* object_associated)
-{
-	add_bi_room_tr(rtr);
-	add_object(object_associated);
-
-	// the object in the second room
-	World_object* new_obj = object_associated->clone();
-	new_obj->move(rtr.pos_to);
-	rtr.leads_to->add_object(new_obj);
-}*/
-
-/*void Room::add_bi_room_tr_wobj(Room* const leads_to, const pos_t pos_to, World_object* object_associated)
-{
-	room_tr rtr{leads_to, pos_to, object_associated->get_area()};
-	add_bi_room_tr_wobj(rtr, object_associated);
-
-}*/
-
-/*void Room::add_door(Room* const second_room, const pos_t pos_to, door* door_in_first)
-{
-	door_in_first->set_room(this);
-	room_tr rtr{this, second_room, pos_to, door_in_first->get_area(), door_in_first};
-	//rtr.set_room_in(this);
+	rtr.set_room_in(this);
 	rtr.generate_reverse_tr();
-	//add_bi_room_tr(rtr);
-	add_room_tr(rtr);
-
-
-	//door* second_door = door_in_first->get_linked_version(pos_to);
-	//door_in_first->link(second_door);
-
-	entities.insert(door_in_first);
-	//second_room->objects.insert(second_door);
+	
+	transitions.push_back(rtr);
+	rtr.room_to->transitions.push_back(*rtr.get_other_way_room_tr());
 }
 
-void Room::make_door(bool is_vertical, Room* const room1, Room* room2, const pos_t& pos1, const pos_t& pos2, const dim_t& dim, bool is_closed)
-{
-	door* dr_ptr = new door(pos1, dim, is_vertical, is_closed, room1);
-	room_tr rtr(room1, room2, pos2, area_t(pos1, dim), dr_ptr);
-	rtr.generate_reverse_tr();
-	room1->add_room_tr(rtr);
-
-	room1->entities.insert(dr_ptr);
-}*/
 // ---
 
+// OPTIMIZATION: rework rtr container to be fast with this operation
 const Room::room_tr& Room::get_room_tr(const pos_t& at) const
 {
 	/*auto find_it = room_trs.right.find(area_t(at));
@@ -165,10 +100,10 @@ const Room::room_tr_vector& Room::get_room_trs() const
 	return transitions;
 }
 
-const Room::room_obj_set& Room::get_entities() const
+/*const Room::room_obj_set& Room::get_entities() const
 {
 	return entities;
-}
+}*/
 
 
 /*void World_object::move_to_room(Room* room_ptr, pos_t pos)
@@ -207,11 +142,10 @@ bool World_object::is_allowed_pos(pos_t p) const
 }*/
 
 Room::room_tr::room_tr(Room* const room_to, const pos_t& pos_to, const area_t& area_from,
-					   Entity* obj_associated,
 					   room_tr* other_way_room_tr):
 	/*room_in{nullptr},*/ room_to{room_to},
 	pos_to{pos_to}, area_from{area_from},
-	obj_associated{obj_associated},
+	//obj_associated{obj_associated},
 	other_way_room_tr{other_way_room_tr}
 {}
 
@@ -222,7 +156,8 @@ void Room::room_tr::generate_reverse_tr()
 	area_t rev_rtr_area{pos_to, area_from.get_dim()};
 	other_way_room_tr =  new room_tr(room_to, room_in,
 									 area_from.pos1, rev_rtr_area,
-									 obj_associated, this);
+									 //obj_associated,
+									 this);
 	//other_way_room_tr->set_room_in(room_to);
 }
 

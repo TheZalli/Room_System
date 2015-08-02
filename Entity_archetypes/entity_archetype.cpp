@@ -15,7 +15,7 @@ Entity_archetype::~Entity_archetype()
 	std::for_each(comps.begin(), comps.end(), delete_pointed_to<Comps::Component>);
 }
 
-Entity* Entity_archetype::make_entity(Room* room_in, std::initializer_list<Comps::Component*> comp_values) const throw(std::invalid_argument) {
+Entity* Entity_archetype::make_entity(std::initializer_list<Comps::Component*> comp_values) const throw(std::invalid_argument) {
 	if (comp_values.size() > comps.size()) {
 		throw std::invalid_argument("Function Entity_archetype::make_entity expected maximum "
 									+ std::to_string(comps.size()) + " components, got " + std::to_string(comp_values.size()) );
@@ -23,8 +23,8 @@ Entity* Entity_archetype::make_entity(Room* room_in, std::initializer_list<Comps
 	
 	std::vector<Comps::Component*> returned_comps{comp_values};
 	
-	// NOTE: this is probably one of the most important aspects of this archetype system
-	// check the validity of the comp_values
+	// NOTE: this is probably one of the most important things of this archetype system
+	// checks the validity of the comp_values
 	{
 		// NOTE: comps.size() >= comp_values.size() is true
 		auto vec_it = comps.begin();
@@ -41,7 +41,7 @@ Entity* Entity_archetype::make_entity(Room* room_in, std::initializer_list<Comps
 		}
 	}
 	
-	return new Entity(room_in, comp_values);
+	return new Entity(comp_values);
 }
 
 // ---
@@ -65,7 +65,7 @@ Entity_archetype_manager::add_archetype(const std::string& name,
 	entity_archetypes.insert({std::string(name), new Entity_archetype{comps}});
 }
 
-std::vector<Comps::Component*>
+const std::vector<Comps::Component*>&
 Entity_archetype_manager::get_comps_of_archt(const std::string& name) const throw(std::out_of_range)
 {
 	return entity_archetypes.at(name)->comps;
@@ -84,5 +84,10 @@ Entity_archetype_manager::add_default_archetypes()
 						   new Comps::Obstacle(true),
 						   new Comps::Name("door")}
 				  );
+	
+	add_archetype("box", {new Comps::Position(),
+						  new Comps::Obstacle(true),
+						  new Comps::Name("box")
+				  });
 }
 

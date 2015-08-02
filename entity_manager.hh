@@ -3,6 +3,8 @@
 
 #include "entity.hh"
 #include "Entity_archetypes/entity_archetype.hh"
+#include "Components/components_include.hh"
+
 #include "room.hh"
 #include <vector>
 
@@ -17,14 +19,19 @@ public:
 	~Entity_manager();
 
 	// these functions create entities and returns a pointer to them
-	Entity* add_entity(Room* room_in, std::vector<Comps::Component*> comps);
-	Entity* add_entity_from_archetype(Room* room_in, std::string name, std::initializer_list<Comps::Component*> component_values);
+	Entity* add_entity(std::vector<Comps::Component*> comps);
+	Entity* add_entity_from_archetype(std::string name, std::initializer_list<Comps::Component*> component_values);
 
 	Entity* get_entity_by_id(unsigned id) const throw(std::out_of_range);
+	
+	entities_t get_entities_by_room(Room* room) const;
+	
 	entities_t& get_entities() const;
 private:
 	Entity_archetype_manager arch_manager;
 	entities_t ents;
+	
+	//std::map<std::string, entities_t> ents;
 };
 }
 
