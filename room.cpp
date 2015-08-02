@@ -64,8 +64,8 @@ void Room::add_room_tr(room_tr rtr)
 {
 	rtr.set_room_in(this);
 	transitions.push_back(rtr);
-	if (rtr.get_other_way_room_tr()) {
-		rtr.room_to->transitions.push_back(*rtr.get_other_way_room_tr());
+	if (rtr.get_reverse_tr()) {
+		rtr.room_to->transitions.push_back(*rtr.get_reverse_tr());
 	}
 }
 
@@ -75,7 +75,7 @@ void Room::add_bi_room_tr(Room::room_tr rtr)
 	rtr.generate_reverse_tr();
 	
 	transitions.push_back(rtr);
-	rtr.room_to->transitions.push_back(*rtr.get_other_way_room_tr());
+	rtr.room_to->transitions.push_back(*rtr.get_reverse_tr());
 }
 
 // ---

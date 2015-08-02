@@ -46,17 +46,40 @@ public:
 	
 	pos_t get_pos() const { return pos; }
 	pos_t& get_pos_ref()  { return pos; }
+	const pos_t& get_pos_ref() const { return pos; }
 	
 	void set_pos(pos_t p) { pos = p; }
 	//void add_pos(pos_t p) { pos += p; }
 
+	
+	//bool watch_by_default() const { return true; }
+	
+protected:
+	Room* room_ptr;
+	pos_t pos;
+};
+
+// a position that moves actively between rooms
+class Movable_position : public Position
+{
+public:
+	Movable_position(): Position(), room_tr_used{nullptr}, last_move{0,0} {}
+	Movable_position(Room* room_in, pos_t pos): Position{room_in, pos}, room_tr_used{nullptr}, last_move{0,0} {}
+	
+	//std::string get_name() const { return "movable position"; }
+	
+	Component* copy() const { return new Movable_position(*this); }
+	
 	void move_pos(pos_t to_add)
 	{
+		room_tr_used = nullptr;
+		
 		pos_t out = room_ptr -> how_much_outside(this->pos + to_add);
 		
 		if (out == pos_t(0,0)) // normal movement
 		{
 			this->pos += to_add;
+			last_move = to_add;
 		}
 		else { // blocked by a wall
 			const Room::room_tr& rtr = room_ptr->get_room_tr(pos);
@@ -71,23 +94,32 @@ public:
 				{
 					room_ptr = room_to;
 					pos = pos_to + to_add;
+					room_tr_used = &rtr;
+					
+					last_move = to_add;
 				}
 			}
-			// OPTIMIZATION: store this transition
+			// OPTIMIZATION: store this transition for future use
 			else if (room_ptr->get_room_tr(pos + to_add) != Room::none_room_tr) // room transition overrides wall
 			{
 				pos += to_add;
+				last_move = to_add;
 			}
-			else this->pos += to_add - out;
+			else {
+				this->pos += to_add - out; // we could just do nothing here but if we move more than 1 in any direction then this is relevant
+				last_move = to_add - out;
+			}
 		}
 		
 	}
 	
-	//bool watch_by_default() const { return true; }
+	Room::room_tr const* get_used_room_tr() const { return room_tr_used; }
+	pos_t get_last_move() const { return last_move; }
 	
 private:
-	Room* room_ptr;
-	pos_t pos;
+	// the room_tr used in the previous move_pos operation. nullptr if it didn't use any. probably useless right now
+	Room::room_tr const* room_tr_used;
+	pos_t last_move; // the vector we moved the last time. to_add of the previous operation
 };
 
 class Area : public Simple_component<area_t>//, public Base_position, public Base_area

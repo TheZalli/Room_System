@@ -61,7 +61,7 @@ public:
 		}
 
 		void generate_reverse_tr(); // creates a new room transition to the target room and sets other_way_room_tr to point to that
-		room_tr* get_other_way_room_tr() const { return other_way_room_tr; }
+		room_tr* get_reverse_tr() const { return other_way_room_tr; }
 		void set_other_way_room_tr(room_tr* other) { other_way_room_tr = other; }
 
 		/*inline void set_other_way_room_tr_as_reverse() {

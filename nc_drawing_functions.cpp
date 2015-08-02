@@ -31,27 +31,39 @@ char debug_uint_to_char(unsigned i) {
 
 void Ascii_drawer::update(bool update_all)
 {
-	debug_msgs << "pos: " << anchor_pos.to_string() << " old pos: " << prev_anchor_pos.to_string() << std::endl;
+	//debug_msgs << "pos: " << anchor_pos.to_string() << " old pos: " << prev_anchor_pos.to_string() << std::endl;
 	
-	if (update_all || (prev_anchor_room != anchor_room)) {
-		prev_anchor_room = anchor_room;
-		prev_anchor_pos = anchor_pos;
+	if (update_all) {
+		prev_anchor_room = anchor_pos_comp.get_room_ptr();
 		
 		clear_vis_array();
 		varr.set_offset({0,0});
-		varr.draw_room(anchor_room, anchor_pos_in_screen - anchor_pos); // note: anchor_pos is local pos in room
+		varr.draw_room(anchor_pos_comp.get_room_ptr(), anchor_pos_in_screen - anchor_pos_comp.get_pos()); // note: anchor_pos is local pos in room
 		
-		const Room::room_tr_vector& trs = anchor_room->get_room_trs();
+		const Room::room_tr_vector& trs = anchor_pos_comp.get_room_ptr()->get_room_trs();
 		for (Room::room_tr_vector::const_iterator it = trs.begin();
 			 it != trs.cend(); ++it)
 		{
-			varr.draw_room(it->room_to, anchor_pos_in_screen - anchor_pos + it->area_from.get_pos1() - it->pos_to);
+			varr.draw_room(it->room_to, anchor_pos_in_screen - anchor_pos_comp.get_pos() + it->area_from.get_pos1() - it->pos_to);
 		}
 		
 	} else {
-		if (prev_anchor_pos != anchor_pos) { // we have moved
-			shift_vis_array(anchor_pos - prev_anchor_pos);
-			prev_anchor_pos = anchor_pos;
+		shift_vis_array(anchor_pos_comp.get_last_move());
+		
+		if(prev_anchor_room != anchor_pos_comp.get_room_ptr()) // room shift happened
+		{
+			Room::room_tr const* rtr_ptr = anchor_pos_comp.get_used_room_tr();
+			
+			const Room::room_tr_vector& trs = anchor_pos_comp.get_room_ptr()->get_room_trs();
+			
+			for (Room::room_tr_vector::const_iterator it = trs.begin();
+				 it != trs.cend(); ++it)
+			{
+				if (*rtr_ptr != *it->get_reverse_tr()) // do not draw the room we came from again
+					varr.draw_room(it->room_to, anchor_pos_in_screen - anchor_pos_comp.get_pos() + it->area_from.get_pos1() - it->pos_to + varr.get_offset());
+			}
+			
+			prev_anchor_room = anchor_pos_comp.get_room_ptr();
 		}
 	}
 	

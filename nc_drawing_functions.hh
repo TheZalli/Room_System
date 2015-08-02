@@ -96,12 +96,9 @@ public:
 		eh_ptr{eh_ptr}, anchor{anchor},
 		// prev_room_ptr{},
 		
-		//anchor_pos{0}, prev_anchor_pos{0},
-		anchor_room{dynamic_cast<Comps::Position&>(anchor->get_component_with_name("position")).get_room_ptr_ref()},
-		prev_anchor_room{anchor_room},
+		anchor_pos_comp{dynamic_cast<Comps::Movable_position&>(anchor->get_component_with_name("position"))},
 		
-		anchor_pos{dynamic_cast<Comps::Position&>(anchor->get_component_with_name("position")).get_pos_ref()},
-		prev_anchor_pos{anchor_pos},
+		prev_anchor_room{anchor_pos_comp.get_room_ptr()},
 		
 		anchor_pos_in_screen{win->_maxx/2, win->_maxy/2},
 		//anchor_pos_in_screen{15, 15},
@@ -114,7 +111,6 @@ public:
 		//varr{20,20, offset}
 		
 	{
-		
 		update(true);
 	}
 
@@ -125,7 +121,7 @@ public:
 	
 	/**
 	 * @brief update updates the vis_array var
-	 * @param update_all True if we want to update all, false when we just shift the varr. Is overrided to true if a room transition has occurred for the anchor entity.
+	 * @param update_all True if we want to update all, false when we just shift the varr.
 	 */
 	void update(bool update_all = false);
 	
@@ -164,11 +160,9 @@ private:
 	//Room* prev_room_ptr;
 	
 	// the position which we are anchored to
-	Room* const& anchor_room;
-	Room* prev_anchor_room;
+	const Comps::Movable_position& anchor_pos_comp;
 	
-	const pos_t& anchor_pos;
-	pos_t prev_anchor_pos;
+	Room* prev_anchor_room;
 	
 	// the position where we want the anchored position to be in in the screen
 	pos_t anchor_pos_in_screen;

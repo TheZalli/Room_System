@@ -74,7 +74,7 @@ Entity_archetype_manager::get_comps_of_archt(const std::string& name) const thro
 void
 Entity_archetype_manager::add_default_archetypes()
 {
-	add_archetype("player", {new Comps::Position(),
+	add_archetype("player", {new Comps::Movable_position(),
 							 new Comps::Name()}
 				  );
 	

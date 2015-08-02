@@ -45,13 +45,13 @@ int main()
 	Room::room_tr rtr2to3 = Room::room_tr(r3, pos_t(2,0), area_t({3,5}));
 	r2->add_bi_room_tr(rtr2to3);
 	
-	Room::room_tr rtr1to4 = Room::room_tr(r4, pos_t(0,16), area_t({10,3}));
+	Room::room_tr rtr1to4 = Room::room_tr(r4, pos_t(0,10), area_t({10,3}));
 	r1->add_bi_room_tr(rtr1to4);
 
 	//Entity* player_ptr = ent_man.add_entity_from_archetype(r1, "player");
 
 	// the ownership is given to the entity
-	Comps::Position* pc_pos = new Comps::Position(r1, pos_t{2,2});
+	Comps::Movable_position* pc_pos = new Comps::Movable_position(r1, pos_t{2,2});
 	Comps::Name* pc_name = new Comps::Name("Albert A Asimov");
 	//Entity* player_ptr = ent_man.add_entity(r1, std::vector<Comps::Component*>{pc_pos, pc_name});
 	Entity* player_ptr = ent_man.add_entity_from_archetype(std::string("player"), {pc_pos, pc_name});
