@@ -3,7 +3,7 @@
 #include "nc_drawing_functions.hh"
 //#include <iostream>
 #include <ncurses.h>
-#include <string.h>
+#include <string>
 
 //using namespace std;
 using namespace Room_System;
@@ -30,11 +30,11 @@ void init_ncurses() {
 int main()
 {
 	Entity_manager ent_man{};
-
+	
 	Room* r1 = new Room{{9,4}, "the first room"};
 	Room* r2 = new Room{{7,4}, "the second room"};
 	Room* r3 = new Room{{3,9}, "the magic room", room_type::corridor};
-	Room* r4 = new Room{{32,32}, "the big room", room_type::large_room};
+	Room* r4 = new Room{{32,13}, "the big room", room_type::large_room};
 	
 	Room::room_tr rtr1to2 = Room::room_tr(r2, pos_t(8,3), area_t({0,2}));
 	r1->add_bi_room_tr(rtr1to2);
@@ -47,6 +47,9 @@ int main()
 	
 	Room::room_tr rtr1to4 = Room::room_tr(r4, pos_t(0,10), area_t({10,3}));
 	r1->add_bi_room_tr(rtr1to4);
+	
+	//Room::room_tr rtr4to4 = Room::room_tr(r4, pos_t(2,14), area_t({13,0}));
+	//r4->add_bi_room_tr(rtr4to4);
 
 	//Entity* player_ptr = ent_man.add_entity_from_archetype(r1, "player");
 

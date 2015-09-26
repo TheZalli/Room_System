@@ -5,13 +5,15 @@
 #include "Entity_archetypes/entity_archetype.hh"
 #include "Components/components_include.hh"
 
-#include "room.hh"
+//#include "room.hh"
 #include <vector>
 
 namespace Room_System {
 class Room;
 
+// OPTIMIZATION: Change datatype so that getting all entities from the same room is fast
 typedef std::vector<Entity*>  entities_t;
+
 class Entity_manager
 {
 public:

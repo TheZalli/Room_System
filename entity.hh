@@ -7,6 +7,7 @@
 #include <vector>
 #include <initializer_list>
 #include <stdexcept>
+#include <string>
 
 namespace Room_System {
 class Room;

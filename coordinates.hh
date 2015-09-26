@@ -40,6 +40,10 @@ struct pos_t {
 
 	dist_t max() const { return (x > y) ? x : y; }
 	dist_t min() const { return (x < y) ? x : y; }
+	
+	dist_t select_x_or_y(bool select_x) const {
+		return select_x ? x : y;
+	}
 
 	struct pos_key {
 		bool operator()(const pos_t& p1, const pos_t& p2) const {

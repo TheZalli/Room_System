@@ -22,6 +22,12 @@ public:
 	virtual std::string get_name() const = 0;
 	
 	/**
+	 * @brief get_sub_name
+	 * @return a static name for the sub-component of same type as the normal component. Can be used to distinguish inherited components.
+	 */
+	virtual std::string get_sub_name() const { return ""; }
+	
+	/**
 	 * @brief get_value_str
 	 * @return a string representation of the value of the component
 	 */

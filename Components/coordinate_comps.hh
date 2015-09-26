@@ -63,16 +63,18 @@ protected:
 class Movable_position : public Position
 {
 public:
-	Movable_position(): Position(), room_tr_used{nullptr}, last_move{0,0} {}
+	Movable_position(): Position(), room_tr_used{nullptr}, room_tr_we_are_in{nullptr}, last_move{0,0} {}
 	Movable_position(Room* room_in, pos_t pos): Position{room_in, pos}, room_tr_used{nullptr}, last_move{0,0} {}
 	
-	//std::string get_name() const { return "movable position"; }
+	std::string get_sub_name() const { return "movable position"; }
 	
 	Component* copy() const { return new Movable_position(*this); }
 	
 	void move_pos(pos_t to_add)
 	{
 		room_tr_used = nullptr;
+		room_tr_we_are_in = nullptr;
+		last_move = pos_t(0,0);
 		
 		pos_t out = room_ptr -> how_much_outside(this->pos + to_add);
 		
@@ -99,27 +101,31 @@ public:
 					last_move = to_add;
 				}
 			}
-			// OPTIMIZATION: store this transition for future use
-			else if (room_ptr->get_room_tr(pos + to_add) != Room::none_room_tr) // room transition overrides wall
+			else if ( *( room_tr_we_are_in = &room_ptr->get_room_tr(pos + to_add) ) != Room::none_room_tr) // room transition overrides wall
 			{
 				pos += to_add;
 				last_move = to_add;
 			}
 			else {
-				this->pos += to_add - out; // we could just do nothing here but if we move more than 1 in any direction then this is relevant
-				last_move = to_add - out;
+				// do nothing we're blocked by the wall
 			}
 		}
 		
 	}
 	
 	Room::room_tr const* get_used_room_tr() const { return room_tr_used; }
+	Room::room_tr const* get_room_tr_we_are_in() const { return room_tr_we_are_in; }
+	
 	pos_t get_last_move() const { return last_move; }
 	
 private:
-	// the room_tr used in the previous move_pos operation. nullptr if it didn't use any. probably useless right now
+	// the room_tr used in the previous move_pos operation. nullptr if it didn't use any.
 	Room::room_tr const* room_tr_used;
-	pos_t last_move; // the vector we moved the last time. to_add of the previous operation
+	// points to the room_tr that is on the same point as us. nullptr if there are none
+	Room::room_tr const* room_tr_we_are_in;
+	
+	// the vector we moved the last time. to_add of the previous operation
+	pos_t last_move;
 };
 
 class Area : public Simple_component<area_t>//, public Base_position, public Base_area

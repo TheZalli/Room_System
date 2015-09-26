@@ -7,6 +7,7 @@
 #include <string>
 #include <cstddef>
 #include <vector>
+#include <string>
 //#include <assert.h>
 
 using namespace Coordinates;
@@ -63,6 +64,13 @@ public:
 		void generate_reverse_tr(); // creates a new room transition to the target room and sets other_way_room_tr to point to that
 		room_tr* get_reverse_tr() const { return other_way_room_tr; }
 		void set_other_way_room_tr(room_tr* other) { other_way_room_tr = other; }
+		
+		/**
+		 * @brief get_wall_orientation tells if this room transition is on the vertical, horizontal or both walls, or in the center of the room.
+		 * @param vertical true if the room_tr is in the vertical walls, x = 0 or x = max
+		 * @param horizontal true if the room_tr is in the horizontal walls, y = 0 or y = max
+		 */
+		void get_wall_orientation(bool& vertical, bool& horizontal) const;
 
 		/*inline void set_other_way_room_tr_as_reverse() {
 			other_way_room_tr = &generate_reverse_tr;
@@ -73,6 +81,7 @@ public:
 				return pos_t::pos_key{}(rtr1.pos_to, rtr2.pos_to);
 			}
 		};*/
+		
 		std::string to_string() const { // DEBUG
 			return room_in->get_name() + ": " + area_from.to_string() + " -> "
 				 + room_to->get_name() + ": " + pos_to.to_string();
@@ -85,7 +94,7 @@ public:
 	// ---
 
 	Room();
-	Room(dim_t dim, std::string name, room_type type = room_type::small_room);
+	Room(dim_t dim, const std::string& name, room_type type = room_type::small_room);
 
 	// initializes the unique id counter, currently unnecessary
 	static void Init(unsigned first_id = (unsigned)-1);

@@ -11,7 +11,7 @@ const Room::room_tr Room::none_room_tr = Room::room_tr(nullptr, {}, {}, nullptr)
 Room::Room(): dim{1,1}, name{}, transitions{}, type{room_type::small_room}
 {}
 
-Room::Room(dim_t dim, std::string name, room_type type):
+Room::Room(dim_t dim, const std::string& name, room_type type):
 	/*id{Room::prev_id++},*/ dim{dim.w, dim.l}, name{name}, transitions{}, type{type} {}
 
 void Room::Init(unsigned first_id)
@@ -22,7 +22,7 @@ void Room::Init(unsigned first_id)
 
 bool Room::is_outside_floor(pos_t pos) const{
 	const pos_t& pos_corner = dim.to_pos();
-	return (pos.x < 0 || pos.y < 0 || pos.x >= pos_corner.x || pos.y >= pos_corner.y); // should work
+	return (pos.x <= 0 || pos.y <= 0 || pos.x > pos_corner.x || pos.y > pos_corner.y); // should work
 	//return (unsigned)pos.x >= dim.w || (unsigned)pos.y >= dim.l; // haxy but simple (negative values are larger than positive when interpreted as unsigned)
 }
 
@@ -159,6 +159,14 @@ void Room::room_tr::generate_reverse_tr()
 									 //obj_associated,
 									 this);
 	//other_way_room_tr->set_room_in(room_to);
+}
+
+void Room::room_tr::get_wall_orientation(bool& vertical, bool& horizontal) const
+{
+	assert(room_in);
+	
+	vertical =   (area_from.pos1.x <= 0) || (area_from.pos2.x >= (dist_t)room_in->dim.w);
+	horizontal = (area_from.pos1.y <= 0) || (area_from.pos2.y >= (dist_t)room_in->dim.l);
 }
 
 /*Room::room_tr::room_tr(const Room* leads_to, const pos_t& pos_to, const area_t& area_from, world_object * const object_associated):

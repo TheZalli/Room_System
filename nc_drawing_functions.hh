@@ -56,6 +56,7 @@ public:
 		}
 
 		void draw_room(const Room* const r, const pos_t& pos);
+		void LOS_draw_room(const Room* const r, Room::room_tr const* room_tr_from, const Comps::Position& pos_from, pos_t pos_in_varr) throw(std::invalid_argument);
 		//void update(Player* PC);
 
 		void shift(pos_t offset) {//int horizontal, int vertical) {
@@ -107,8 +108,8 @@ public:
 		debug_msgs{},
 	  
 		src_win{win},
-		varr{(unsigned)win->_maxy, (unsigned)win->_maxx, &debug_msgs, offset}
-		//varr{20,20, offset}
+		//varr{(unsigned)win->_maxy, (unsigned)win->_maxx, &debug_msgs, offset}
+		varr{128, 128, &debug_msgs, offset}
 		
 	{
 		update(true);
@@ -140,7 +141,7 @@ public:
 	}
 	
 	void print_debug_messages(bool clear_msgs = true) {
-		move(1,0);
+		move(0,0);
 		printw(debug_msgs.str().c_str());
 		if (clear_msgs) debug_msgs.str(std::string());
 	}
