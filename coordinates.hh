@@ -14,14 +14,18 @@ typedef unsigned length_t;
 
 // ---
 
-struct pos_t {
-	dist_t x;
-	dist_t y;
-
-	pos_t(): x{}, y{} {}
-	pos_t(dist_t x, dist_t y): x{x}, y{y} {}
-	pos_t(const pos_t& p): x{p.x}, y{p.y} {}
-
+class pos_t {
+public:
+	pos_t();
+	pos_t(dist_t x, dist_t y);
+	pos_t(const pos_t& p);
+	
+	dist_t get_x() const;
+	void set_x(const dist_t& value);
+	
+	dist_t get_y() const;
+	void set_y(const dist_t& value);
+	
 	pos_t operator+(const pos_t& p) const;
 	pos_t operator-(const pos_t& p) const;
 	pos_t operator-() const;
@@ -41,9 +45,7 @@ struct pos_t {
 	dist_t max() const { return (x > y) ? x : y; }
 	dist_t min() const { return (x < y) ? x : y; }
 	
-	dist_t select_x_or_y(bool select_x) const {
-		return select_x ? x : y;
-	}
+	dist_t select_x_or_y(bool select_x) const;
 
 	struct pos_key {
 		bool operator()(const pos_t& p1, const pos_t& p2) const {
@@ -52,9 +54,7 @@ struct pos_t {
 		}
 	};
 
-	std::string to_string() const {
-		return std::to_string(x) + ", " + std::to_string(y);
-	}
+	std::string to_string() const;
 
 	/*friend std::size_t hash_value(const pos_t& pos) {
 		std::size_t seed{0};
@@ -63,6 +63,9 @@ struct pos_t {
 		return seed;
 		//return (size_t)(pos.x) * 1024 + (size_t)(pos.y);
 	}*/
+public:
+	dist_t x;
+	dist_t y;
 };
 
 // ---
@@ -70,17 +73,21 @@ struct pos_t {
 // a datatype for surface areas (if length_t is m this is m²)
 typedef unsigned long surf_area_t;
 
-struct dim_t {
-	length_t w; // width in x coordinate
-	length_t l; // length in y coordinate
-
+class dim_t {
+public:
 	dim_t() = default;
-	dim_t(length_t w, length_t l): w{w}, l{l} {}
-	dim_t(const pos_t& pos): w{(length_t)pos.x}, l{(length_t)pos.y} {}
+	dim_t(length_t w, length_t l);
+	dim_t(const pos_t& pos);
+	
+	length_t get_w() const;
+	void set_w(const length_t& value);
+	
+	length_t get_l() const;
+	void set_l(const length_t& value);
+	
+	pos_t to_pos() const;
 
-	pos_t to_pos() const { return pos_t((dist_t)w, (dist_t)l); }
-
-	surf_area_t get_surf_area() const { return w*l; }
+	surf_area_t get_surf_area() const;
 
 	dim_t operator+(const dim_t& p) const;
 	dim_t operator-(const dim_t& p) const;
@@ -94,13 +101,14 @@ struct dim_t {
 
 	bool operator==(const dim_t& rhs) const;
 
-	length_t max() const { return (w > l) ? w : l; }
-	length_t min() const { return (w < l) ? w : l; }
+	length_t max() const;
+	length_t min() const;
 
-
-	std::string to_string() const {
-		return std::to_string(w) + "x" + std::to_string(l);
-	}
+	std::string to_string() const;
+	
+public:
+	length_t w; // width in x coordinate
+	length_t l; // length in y coordinate
 };
 
 pos_t operator+(const pos_t& pos, const dim_t& dim);
@@ -113,17 +121,8 @@ typedef dim_t shape_t; // shape, currently the same as dimensions
 
 // ---
 
-/*struct size_t_pos {
-    size_t x;
-    size_t y;
-};*/
-
-// ---
-
-struct area_t {
-	pos_t pos1;
-	pos_t pos2;
-
+class area_t {
+public:
 	area_t(): pos1{}, pos2{} {}
 	//area_t(const pos_t& p1, const pos_t& p2): pos1{p1}, pos1{p2} {}
 	area_t(const pos_t& p): pos1{p}, pos2{p} {}
@@ -131,8 +130,9 @@ struct area_t {
 	area_t(dist_t x1, dist_t y1, dist_t x2, dist_t y2): pos1{x1,y1}, pos2{x2,y2} {}
 
 	dim_t get_dim() const;
-	inline pos_t get_pos1() const { return pos1; }
-	inline pos_t get_pos2() const { return pos2; }
+	
+	pos_t get_pos1() const;
+	pos_t get_pos2() const;
 
 	pos_t get_mid_pos() const;
 
@@ -154,30 +154,11 @@ struct area_t {
 		boost::hash_combine(seed, pos.pos2);
 		return seed;
 	}*/
+	
+public:
+	pos_t pos1;
+	pos_t pos2;
 };
-
-
-// ---
-
-/*/ dimensions of ncurses screens and objects on them
-struct scr_dim_t {
-	unsigned rows; // y
-	unsigned cols; // x
-
-	scr_dim_t() = default;
-	scr_dim_t(unsigned row, unsigned col): rows{row}, cols{col} {}
-	scr_dim_t(const dim_t& dim): rows{dim.l}, cols{dim.w} {}
-
-	dim_t to_dim() const { return dim_t(cols, rows); }
-};//*/
-
-// ---
-
-/*struct overlap_key {
-	bool operator()(const area_t& area1, const area_t& area2) const {
-		return area1.is_overlap(area2);
-	}
-};*/
 
 }
 

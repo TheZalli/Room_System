@@ -64,7 +64,8 @@ class Movable_position : public Position
 {
 public:
 	Movable_position(): Position(), room_tr_used{nullptr}, room_tr_we_are_in{nullptr}, last_move{0,0} {}
-	Movable_position(Room* room_in, pos_t pos): Position{room_in, pos}, room_tr_used{nullptr}, last_move{0,0} {}
+	Movable_position(Room* room_in, pos_t pos): Position{room_in, pos}, room_tr_used{nullptr},
+		room_tr_we_are_in{nullptr}, last_move{0,0} {}
 	
 	std::string get_sub_name() const { return "movable position"; }
 	
@@ -83,15 +84,17 @@ public:
 			this->pos += to_add;
 			last_move = to_add;
 		}
-		else { // blocked by a wall
+		else {
+			// blocked by a wall or room transition
 			const Room::room_tr& rtr = room_ptr->get_room_tr(pos);
 			
-			if (rtr != Room::none_room_tr) // do a room transition
+			// do a room transition
+			if (rtr != Room::none_room_tr)
 			{
 				Room* room_to = rtr.room_to;
 				pos_t pos_to = rtr.pos_to;
 				
-				// if the moved position would lead to an invalid position don't move
+				// if the moved position would lead to a valid position, move
 				if (room_to->how_much_outside(pos_to + to_add) == pos_t(0,0))
 				{
 					room_ptr = room_to;
@@ -99,15 +102,18 @@ public:
 					room_tr_used = &rtr;
 					
 					last_move = to_add;
-				}
+				} // else don't move
 			}
-			else if ( *( room_tr_we_are_in = &room_ptr->get_room_tr(pos + to_add) ) != Room::none_room_tr) // room transition overrides wall
+			// room transition overrides wall
+			else if ( *( room_tr_we_are_in = &room_ptr->get_room_tr(pos + to_add) ) != Room::none_room_tr)
 			{
 				pos += to_add;
 				last_move = to_add;
 			}
 			else {
-				// do nothing we're blocked by the wall
+				// we're blocked by the wall so we are not standing in a room transition
+				// because room_tr_we_are_in was changed in the previous statement. took a while to fix
+				room_tr_we_are_in = nullptr;
 			}
 		}
 		

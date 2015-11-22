@@ -24,7 +24,8 @@ struct event_listener {
 	callback_func_ptr _callback_function;
 	
 	/**
-	 * @brief The ev_list_compare struct is a functor that compares two event_listener's listener components pointers addresses
+	 * @brief The ev_list_compare struct is a functor that compares two event_listener's listener components
+	 * pointers addresses.
 	 * for set compare purposes
 	 */
 	struct liscomp_compare {

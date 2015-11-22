@@ -42,12 +42,8 @@ public:
 				//Entity* obj_associated = nullptr,
 				room_tr* other_way_room_tr = nullptr);
 
-		inline bool operator==(const room_tr& rhs) const {
-			return area_from.pos1 == rhs.area_from.pos1;
-		}
-		inline bool operator!=(const room_tr& rhs) const {
-			return area_from.pos1 != rhs.area_from.pos1;
-		}
+		bool operator==(const room_tr& rhs) const;
+		bool operator!=(const room_tr& rhs) const;
 
 		void set_room_in(Room* room_in){
 			this->room_in = room_in;
@@ -60,27 +56,19 @@ public:
 		{
 			set_room_in(room_in);
 		}
-
-		void generate_reverse_tr(); // creates a new room transition to the target room and sets other_way_room_tr to point to that
+		
+		// creates a new room transition to the target room and sets other_way_room_tr to point to that
+		void generate_reverse_tr();
 		room_tr* get_reverse_tr() const { return other_way_room_tr; }
 		void set_other_way_room_tr(room_tr* other) { other_way_room_tr = other; }
 		
 		/**
-		 * @brief get_wall_orientation tells if this room transition is on the vertical, horizontal or both walls, or in the center of the room.
+		 * @brief get_wall_orientation tells if this room transition is on the vertical, horizontal or both walls,
+		 * or in the center of the room.
 		 * @param vertical true if the room_tr is in the vertical walls, x = 0 or x = max
 		 * @param horizontal true if the room_tr is in the horizontal walls, y = 0 or y = max
 		 */
 		void get_wall_orientation(bool& vertical, bool& horizontal) const;
-
-		/*inline void set_other_way_room_tr_as_reverse() {
-			other_way_room_tr = &generate_reverse_tr;
-		}*/
-
-		/*struct room_tr_key {
-			bool operator ()(const room_tr& rtr1, const room_tr& rtr2) const {
-				return pos_t::pos_key{}(rtr1.pos_to, rtr2.pos_to);
-			}
-		};*/
 		
 		std::string to_string() const { // DEBUG
 			return room_in->get_name() + ": " + area_from.to_string() + " -> "
@@ -89,7 +77,6 @@ public:
 	};
 	static const room_tr none_room_tr;
 
-	//typedef std::set<room_tr, room_tr::room_tr_key> room_tr_set;
 	typedef std::vector<room_tr> room_tr_vector;
 	// ---
 

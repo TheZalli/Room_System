@@ -9,7 +9,8 @@
 namespace Room_System {
 
 /**
- * @brief The Entity_archetype struct stores an archetype for a possible entity. Currently has only a vector of the required components
+ * @brief The Entity_archetype struct stores an archetype for a possible entity. Currently has only a vector of the
+ * required components
  */
 struct Entity_archetype {
 	//std::string arch_t_name; // name of the archetype, eg door, goblin, rock
@@ -21,7 +22,8 @@ struct Entity_archetype {
 	/**
 	 * @brief make_entity makes an entity based on this archetype.
 	 * @param room_in is the room the entity is in. nullptr if they are not in any room
-	 * @param comp_values are the values of the components, the component names are checked if they are the same as in comps.
+	 * @param comp_values are the values of the components, the component names are checked if they are the same as
+	 * in comps.
 	 * Can be smaller than the archetypes component amount and the rest use the archetypes default value
 	 * @return the pointer to the entity made based on this archetype
 	 */
@@ -45,12 +47,15 @@ public:
 		else return false;
 	}
 
-	Entity* make_entity_from_archetype(const std::string& name, std::initializer_list<Comps::Component*> comp_values) const throw(std::out_of_range)
+	Entity* make_entity_from_archetype(const std::string& name,
+									   std::initializer_list<Comps::Component*> comp_values) const
+	throw(std::out_of_range)
 	{
 		return entity_archetypes.at(name)->make_entity(comp_values);
 	}
 	
-	const std::vector<Comps::Component*>& get_comps_of_archt(const std::string& name) const throw(std::out_of_range);
+	const std::vector<Comps::Component*>& get_comps_of_archt(const std::string& name) const
+	throw(std::out_of_range);
 	
 private:
 	ent_arch_t entity_archetypes;

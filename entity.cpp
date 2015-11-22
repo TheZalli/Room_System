@@ -6,8 +6,7 @@ using namespace Room_System;
 unsigned Entity::prev_uid = (unsigned)-1; // initialize uid
 
 Entity::Entity(): comps{}
-{
-}
+{}
 
 Entity::Entity(std::initializer_list<Comps::Component*> components):
 	comps{components}
@@ -49,4 +48,19 @@ Comps::Component& Entity::get_component_with_name(const std::string& comp_name) 
 		if (cmp->get_name() == comp_name) return *cmp;
 	}
 	throw std::out_of_range("component " + comp_name + " not found");
+}
+
+const std::vector<Comps::Component*>& Entity::get_components() const
+{
+	return comps;
+}
+
+
+bool ent_id_key::operator()(const Entity& e1, const Entity& e2) {
+	return e1.uid < e2.uid;
+}
+
+
+bool ent_id_key::operator()(const Entity* e1, const Entity* e2) {
+	return e1->uid < e2->uid;
 }

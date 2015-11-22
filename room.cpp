@@ -23,7 +23,9 @@ void Room::Init(unsigned first_id)
 bool Room::is_outside_floor(pos_t pos) const{
 	const pos_t& pos_corner = dim.to_pos();
 	return (pos.x <= 0 || pos.y <= 0 || pos.x > pos_corner.x || pos.y > pos_corner.y); // should work
-	//return (unsigned)pos.x >= dim.w || (unsigned)pos.y >= dim.l; // haxy but simple (negative values are larger than positive when interpreted as unsigned)
+	
+	// haxy but simple (negative values are larger than positive when interpreted as unsigned)
+	//return (unsigned)pos.x >= dim.w || (unsigned)pos.y >= dim.l;
 }
 
 pos_t Room::how_much_outside(pos_t pos) const {
@@ -149,6 +151,14 @@ Room::room_tr::room_tr(Room* const room_to, const pos_t& pos_to, const area_t& a
 	other_way_room_tr{other_way_room_tr}
 {}
 
+bool Room::room_tr::operator==(const Room::room_tr& rhs) const {
+	return area_from.pos1 == rhs.area_from.pos1;
+}
+
+bool Room::room_tr::operator!=(const Room::room_tr& rhs) const {
+	return area_from.pos1 != rhs.area_from.pos1;
+}
+
 
 
 void Room::room_tr::generate_reverse_tr()
@@ -169,13 +179,4 @@ void Room::room_tr::get_wall_orientation(bool& vertical, bool& horizontal) const
 	horizontal = (area_from.pos1.y <= 0) || (area_from.pos2.y >= (dist_t)room_in->dim.l);
 }
 
-/*Room::room_tr::room_tr(const Room* leads_to, const pos_t& pos_to, const area_t& area_from, world_object * const object_associated):
-	leads_to{leads_to}, pos_to{pos_to}, area_from{area_from},
-	obj_associated{object_associated} {}*/
-
-/*Room::room_tr::room_tr(Room* const leads_to, const pos_t& pos_to, const area_t& area_from, world_object* object_associated):
-	leads_to{leads_to}, pos_to{pos_to}, area_from{area_from}
-{
-	this->leads_to->add_object(object_associated);
-}*/
 

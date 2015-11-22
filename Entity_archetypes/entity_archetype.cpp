@@ -15,10 +15,13 @@ Entity_archetype::~Entity_archetype()
 	std::for_each(comps.begin(), comps.end(), delete_pointed_to<Comps::Component>);
 }
 
-Entity* Entity_archetype::make_entity(std::initializer_list<Comps::Component*> comp_values) const throw(std::invalid_argument) {
+Entity* Entity_archetype::make_entity(std::initializer_list<Comps::Component*> comp_values) const
+throw(std::invalid_argument)
+{
 	if (comp_values.size() > comps.size()) {
-		throw std::invalid_argument("Function Entity_archetype::make_entity expected maximum "
-									+ std::to_string(comps.size()) + " components, got " + std::to_string(comp_values.size()) );
+		throw std::invalid_argument("Function Entity_archetype::make_entity expected maximum " +
+									std::to_string(comps.size()) + " components, got " +
+									std::to_string(comp_values.size()) );
 	}
 	
 	std::vector<Comps::Component*> returned_comps{comp_values};
