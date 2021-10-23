@@ -1,7 +1,7 @@
 # DISCONTINUED
 This is discontinued and kept up for personal reasons only.
 
-Anyone can use this project as a whole or any part of it freely without any need for crediting or such.
+Anyone can use this project as a whole or any part of it freely without any need for crediting or such, though why would anyone want to do that is beyond me.
 
 # The old readme
 
